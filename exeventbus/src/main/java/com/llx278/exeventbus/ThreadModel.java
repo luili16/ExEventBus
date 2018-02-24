@@ -25,5 +25,5 @@ public enum ThreadModel {
     /**
      * 在一个自定义的线程池中执行
      */
-    POOL
+    POOL;
 }

@@ -45,4 +45,12 @@ final class EventType {
         result = 31 * result + mTag.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "EventType{" +
+                "mParamClass=" + mParamClass +
+                ", mTag='" + mTag + '\'' +
+                '}';
+    }
 }

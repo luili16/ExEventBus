@@ -1,5 +1,7 @@
 package com.llx278.exeventbus;
 
+import android.util.Log;
+
 import com.llx278.exeventbus.execute.Executor;
 import com.llx278.exeventbus.execute.ExecutorFactory;
 
@@ -66,6 +68,7 @@ public class EventBus {
 
         EventType eventType = new EventType(tag,event.getClass());
         CopyOnWriteArrayList<Subscription> subscriptionList = mSubScribeHolder.mSubscribeMap.get(eventType);
+        Log.d("main",subscriptionList.toString());
         for (Subscription subs : subscriptionList) {
             Executor executor = ExecutorFactory.createExecutor(subs.mThreadModel);
             Object subscribe = subs.mSubscribeRef.get();

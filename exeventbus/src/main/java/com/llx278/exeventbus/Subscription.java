@@ -41,4 +41,13 @@ class Subscription {
         result = 31 * result + mThreadModel.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Subscription{" +
+                "mSubscribeRef=" + mSubscribeRef +
+                ", mMethod=" + mMethod +
+                ", mThreadModel=" + mThreadModel +
+                '}';
+    }
 }
