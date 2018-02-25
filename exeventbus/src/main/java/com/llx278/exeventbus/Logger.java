@@ -15,7 +15,7 @@ import de.robv.android.xposed.XposedBridge;
 public class Logger {
     private static final String TAG = "ExEventBus";
     private static final boolean DEBUG = true;
-    private static final boolean XPOSED_ENABLE = true;
+    private static final boolean XPOSED_ENABLE = false;
     private static final String SPILT = "  ";
 
     public static void d(String tag, String msg) {

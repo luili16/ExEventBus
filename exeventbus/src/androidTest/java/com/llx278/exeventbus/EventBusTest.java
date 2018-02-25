@@ -45,9 +45,6 @@ public class EventBusTest {
     }
 
 
-      //模拟其他的线程发布事件
-
-
     @Test
     public void postToMainThread() throws Exception {
         ExecutorService executor = Executors.newFixedThreadPool(5);
@@ -189,7 +186,6 @@ public class EventBusTest {
             @Override
             public void run() {
 
-                Log.d("main", "register - start");
                 long endTime = SystemClock.uptimeMillis() + timeout;
                 while (SystemClock.uptimeMillis() < endTime) {
                     try {
@@ -218,7 +214,6 @@ public class EventBusTest {
         new Thread() {
             @Override
             public void run() {
-                Log.d("main", "unRegister - start");
                 long endTime = SystemClock.uptimeMillis() + timeout;
                 while (SystemClock.uptimeMillis() < endTime) {
                     try {
@@ -236,7 +231,6 @@ public class EventBusTest {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    Log.d("main", "unRegister - done");
                 }
                 doneSignal.countDown();
             }
@@ -266,7 +260,6 @@ public class EventBusTest {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    Log.d("main", "publish done!");
                 }
                 doneSignal.countDown();
             }
@@ -277,7 +270,6 @@ public class EventBusTest {
         if (!executor.awaitTermination(1000 * 5, TimeUnit.MILLISECONDS)) {
             throw new RuntimeException("Timeout!!");
         }
-        Log.d("main", "concurrent done!");
     }
 
     private Object createSubscribeEntry(int index) throws Exception {
@@ -292,7 +284,6 @@ public class EventBusTest {
         Constructor<?> constructor = aClass.getConstructor(String.class);
         return constructor.newInstance("event" + index);
     }
-
 
     private Map getSubscribeMap() throws Exception {
         EventBus eb = EventBus.getDefault();

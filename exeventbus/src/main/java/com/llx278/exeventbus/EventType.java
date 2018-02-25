@@ -16,11 +16,11 @@ final class EventType {
     /**
      * 事件对象的参数类型
      */
-    final Class<?> mParamClass;
+    private final Class<?> mParamClass;
     /**
      * 事件的tag
      */
-    final String mTag;
+    private final String mTag;
 
     EventType(@NonNull String tag, @NonNull Class<?> paramClass) {
         mTag = tag;

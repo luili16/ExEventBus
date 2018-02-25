@@ -1,5 +1,6 @@
 package com.llx278.exeventbus;
 
+import android.os.Bundle;
 import android.util.Log;
 
 import com.llx278.exeventbus.execute.Executor;
@@ -12,7 +13,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Created by llx on 2018/2/4.
  */
 public class EventBus {
-    private static final String TAG = "EventBus";
     private static EventBus sEventBus;
     private final SubscribeHolder mSubScribeHolder;
     private EventBus(){
@@ -77,5 +77,14 @@ public class EventBus {
                 }
             }
         }
+    }
+
+    public <T> T postAndReturn(Object event,Class<T> returnClass){
+        return postAndReturn(event,EventType.DEFAULT_TAG,returnClass);
+    }
+
+    public <T> T postAndReturn(Object event,String tag,Class<T> returnClass) {
+
+        return null;
     }
 }
