@@ -1,5 +1,7 @@
 package com.llx278.exeventbus;
 
+import android.util.Log;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Iterator;
@@ -14,8 +16,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 
 class SubscribeHolder {
-
-    private static final boolean DEBUG = true;
 
     /**
      * 所有注册事件的映射

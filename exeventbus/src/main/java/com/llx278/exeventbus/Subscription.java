@@ -29,7 +29,6 @@ class Subscription {
         Subscription that = (Subscription) o;
 
         if (!mSubscribeRef.equals(that.mSubscribeRef)) return false;
-        //noinspection SimplifiableIfStatement
         if (!mMethod.equals(that.mMethod)) return false;
         return mThreadModel == that.mThreadModel;
     }

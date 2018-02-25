@@ -68,14 +68,14 @@ public class EventBus {
 
         EventType eventType = new EventType(tag,event.getClass());
         CopyOnWriteArrayList<Subscription> subscriptionList = mSubScribeHolder.mSubscribeMap.get(eventType);
-        Log.d("main",subscriptionList.toString());
-        for (Subscription subs : subscriptionList) {
-            Executor executor = ExecutorFactory.createExecutor(subs.mThreadModel);
-            Object subscribe = subs.mSubscribeRef.get();
-            if (subscribe != null) {
-                executor.execute(subs.mMethod, event, subs.mSubscribeRef.get());
+        if (subscriptionList != null) {
+            for (Subscription subs : subscriptionList) {
+                Executor executor = ExecutorFactory.createExecutor(subs.mThreadModel);
+                Object subscribe = subs.mSubscribeRef.get();
+                if (subscribe != null) {
+                    executor.execute(subs.mMethod, event, subs.mSubscribeRef.get());
+                }
             }
         }
     }
-
 }

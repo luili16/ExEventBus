@@ -5,25 +5,36 @@ package com.llx278.exeventbus;
  * Created by llx on 2018/2/4.
  */
 
-public enum ThreadModel {
+public enum  ThreadModel {
     /**
      * 主线程执行
      */
-    MAIN,
+    MAIN("main"),
 
     /**
      * 在{@link android.os.HandlerThread}中执行
      * 所有订阅事件以队列的形式在一个子线程的Looper中被执行
      */
-    HANDLER,
+    HANDLER("handler"),
 
     /**
      * 在发布订阅事件的那个线程中执行
      */
-    POST,
+    POST("post"),
 
     /**
      * 在一个自定义的线程池中执行
      */
-    POOL;
+    POOL("pool");
+
+    private final String mName;
+
+    ThreadModel(String name) {
+        mName = name;
+    }
+
+    @Override
+    public String toString() {
+        return mName;
+    }
 }

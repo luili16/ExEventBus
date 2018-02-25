@@ -28,6 +28,9 @@ public class SubscribeEntry2 {
     public SubscribeEntry2(CountDownLatch downSignal) {
         mDownSignal = downSignal;
     }
+    public SubscribeEntry2() {
+        this(null);
+    }
 
     public void register() {
         EventBus.getDefault().register(this);
@@ -37,27 +40,33 @@ public class SubscribeEntry2 {
         EventBus.getDefault().unRegister(this);
     }
 
-    @Subscriber(mode = ThreadModel.HANDLER,tag = "my_event3")
+    @Subscriber(mode = ThreadModel.HANDLER,tag = "event3")
     public void event3Method(Event3 event3) {
         assertNotNull(event3);
         assertEquals(event3.msg,"event3");
         Log.d("main","SubscribeEntry2 event3Method has called!");
-        mDownSignal.countDown();
+        if (mDownSignal != null) {
+            mDownSignal.countDown();
+        }
     }
 
-    @Subscriber(mode = ThreadModel.HANDLER)
+    @Subscriber(mode = ThreadModel.POOL,tag = "event4")
     public void event4Method(Event4 event4) {
         assertNotNull(event4);
         assertEquals(event4.msg,"event4");
-        Log.d("main","event2Method finish");
-        mDownSignal.countDown();
+        Log.d("main","event4Method finish");
+        if (mDownSignal != null) {
+            mDownSignal.countDown();
+        }
     }
 
-    @Subscriber(mode = ThreadModel.MAIN)
-    public void event5Method(Event5 event5) {
-        assertNotNull(event5);
-        assertEquals(event5.msg,"event5");
-        Log.d("main","event3Method finish");
-        mDownSignal.countDown();
+    @Subscriber(mode = ThreadModel.MAIN,tag = "event2")
+    public void event5Method(Event2 event2) {
+        assertNotNull(event2);
+        assertEquals(event2.msg,"event2");
+        Log.d("main","event2Method finish");
+        if (mDownSignal != null) {
+            mDownSignal.countDown();
+        }
     }
 }

@@ -10,6 +10,7 @@ import com.llx278.exeventbus.event.Event2;
 import com.llx278.exeventbus.event.Event3;
 import com.llx278.exeventbus.event.Event4;
 import com.llx278.exeventbus.event.Event5;
+import com.llx278.exeventbus.event.Event6;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -28,6 +29,9 @@ public class SubscribeEntry4 {
     public SubscribeEntry4(CountDownLatch downSignal) {
         mDownSignal = downSignal;
     }
+    public SubscribeEntry4() {
+        this(null);
+    }
 
     public void register() {
         EventBus.getDefault().register(this);
@@ -37,27 +41,33 @@ public class SubscribeEntry4 {
         EventBus.getDefault().unRegister(this);
     }
 
-    @Subscriber(mode = ThreadModel.MAIN,tag = "subscribe_entry4_event3")
-    public void event1Method(Event3 event4) {
-        assertNotNull(event4);
-        assertEquals(event4.msg,"event4");
-        Log.d("main","event1Method finish");
-        mDownSignal.countDown();
+    @Subscriber(mode = ThreadModel.MAIN,tag = "event6")
+    public void event1Method(Event6 event6) {
+        assertNotNull(event6);
+        assertEquals(event6.msg,"event6");
+        Log.d("main","event6Method finish");
+        if (mDownSignal != null) {
+            mDownSignal.countDown();
+        }
     }
 
-    @Subscriber(mode = ThreadModel.HANDLER,tag = "subscribe_entry4_event4")
+    @Subscriber(mode = ThreadModel.HANDLER,tag = "event4")
     public void event1Method1(Event4 event4) {
         assertNotNull(event4);
         assertEquals(event4.msg,"event4");
-        Log.d("main","event2Method finish");
-        mDownSignal.countDown();
+        Log.d("main","event4Method finish");
+        if (mDownSignal != null) {
+            mDownSignal.countDown();
+        }
     }
 
-    @Subscriber(mode = ThreadModel.MAIN,tag = "subscribe_entry4_event5")
+    @Subscriber(mode = ThreadModel.POOL,tag = "event5")
     public void event2Method(Event5 event5) {
         assertNotNull(event5);
         assertEquals(event5.msg,"event5");
-        Log.d("main","event3Method finish");
-        mDownSignal.countDown();
+        Log.d("main","event5Method finish");
+        if (mDownSignal != null) {
+            mDownSignal.countDown();
+        }
     }
 }

@@ -8,6 +8,7 @@ import com.llx278.exeventbus.ThreadModel;
 import com.llx278.exeventbus.event.Event1;
 import com.llx278.exeventbus.event.Event2;
 import com.llx278.exeventbus.event.Event3;
+import com.llx278.exeventbus.event.Event5;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -27,6 +28,10 @@ public class SubscribeEntry3 {
         mDownSignal = downSignal;
     }
 
+    public SubscribeEntry3() {
+        this(null);
+    }
+
     public void register() {
         EventBus.getDefault().register(this);
     }
@@ -35,27 +40,34 @@ public class SubscribeEntry3 {
         EventBus.getDefault().unRegister(this);
     }
 
-    @Subscriber(mode = ThreadModel.MAIN,tag = "subscribe_entry3_event1")
-    public void event1Method(Event1 event1) {
-        assertNotNull(event1);
-        assertEquals(event1.msg,"event1");
-        Log.d("main","event1Method finish");
-        mDownSignal.countDown();
+    @Subscriber(mode = ThreadModel.MAIN,tag = "event5")
+    public void event1Method(Event5 event5) {
+        assertNotNull(event5);
+        assertEquals(event5.msg,"event5");
+        Log.d("main","event5 finish");
+        if (mDownSignal != null) {
+            mDownSignal.countDown();
+        }
+
     }
 
-    @Subscriber(mode = ThreadModel.HANDLER,tag = "subscribe_entry3_event1")
-    public void event1Method1(Event1 event1) {
-        assertNotNull(event1);
-        assertEquals(event1.msg,"event1");
-        Log.d("main","event2Method finish");
-        mDownSignal.countDown();
+    @Subscriber(mode = ThreadModel.HANDLER,tag = "event5")
+    public void event1Method1(Event5 event5) {
+        assertNotNull(event5);
+        assertEquals(event5.msg,"event5");
+        Log.d("main","event5 finish");
+        if (mDownSignal != null) {
+            mDownSignal.countDown();
+        }
     }
 
-    @Subscriber(mode = ThreadModel.MAIN,tag = "subscribe_entry3_event2")
+    @Subscriber(mode = ThreadModel.MAIN,tag = "event2")
     public void event2Method(Event2 event2) {
         assertNotNull(event2);
         assertEquals(event2.msg,"event2");
-        Log.d("main","event3Method finish");
-        mDownSignal.countDown();
+        Log.d("main","event2Method finish");
+        if (mDownSignal != null) {
+            mDownSignal.countDown();
+        }
     }
 }
