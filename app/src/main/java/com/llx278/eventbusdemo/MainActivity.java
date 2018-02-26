@@ -1,7 +1,5 @@
 package com.llx278.eventbusdemo;
 
-import android.content.Intent;
-import android.os.FileUriExposedException;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,13 +31,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 EventBus.getDefault().post("hello from service",MainActivity.MAIN_TAG);
                 Event1 event1 = new Event1();
-                event1.msg = "hello from event 1";
+                event1.msg = "hello from type 1";
                 EventBus.getDefault().post(event1);
                 Event2 event2 = new Event2();
-                event2.msg = "hello from event 2";
+                event2.msg = "hello from type 2";
                 EventBus.getDefault().post(event2);
                 Event3 event3 = new Event3();
-                event3.msg = "hello from event 3";
+                event3.msg = "hello from type 3";
                 EventBus.getDefault().post(event3);
             }
         });
@@ -63,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Subscriber(tag = MAIN_TAG,mode = ThreadModel.POST)
+    @Subscriber(tag = MAIN_TAG, model = ThreadModel.POST)
     public void updateTextView(String msg) {
         try {
             textView.setText(msg);

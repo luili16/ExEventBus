@@ -6,10 +6,7 @@ import com.llx278.exeventbus.EventBus;
 import com.llx278.exeventbus.Subscriber;
 import com.llx278.exeventbus.ThreadModel;
 import com.llx278.exeventbus.event.Event1;
-import com.llx278.exeventbus.event.Event2;
 import com.llx278.exeventbus.event.Event3;
-
-import junit.framework.Assert;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -39,7 +36,7 @@ public class SubscribeEntry1 {
         EventBus.getDefault().unRegister(this);
     }
 
-    @Subscriber(mode = ThreadModel.MAIN,tag = "event1")
+    @Subscriber(model = ThreadModel.MAIN,tag = "event1")
     public void event1Method(Event1 event1) {
         assertNotNull(event1);
         assertEquals(event1.msg,"event1");
@@ -49,7 +46,7 @@ public class SubscribeEntry1 {
         }
     }
 
-    @Subscriber(mode = ThreadModel.HANDLER,tag = "event3")
+    @Subscriber(model = ThreadModel.HANDLER,tag = "event3")
     public void event3Method1(Event3 event3) {
         assertNotNull(event3);
         assertEquals(event3.msg,"event3");
@@ -59,7 +56,7 @@ public class SubscribeEntry1 {
         }
     }
 
-    @Subscriber(mode = ThreadModel.POOL,tag = "event3")
+    @Subscriber(model = ThreadModel.POOL,tag = "event3")
     public void event3Method(Event3 event3) {
         assertNotNull(event3);
         assertEquals(event3.msg,"event3");

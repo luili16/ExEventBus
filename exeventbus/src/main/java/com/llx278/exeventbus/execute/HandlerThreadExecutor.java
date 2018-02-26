@@ -5,6 +5,7 @@ import android.os.HandlerThread;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * 发布的时间执行在HandlerThread
@@ -14,6 +15,12 @@ import java.lang.reflect.Method;
 public class HandlerThreadExecutor implements Executor {
 
     private final Handler mHandler;
+    private final ThreadLocal<Object> mThreadLocalLock = new ThreadLocal<Object>(){
+        @Override
+        protected Object initialValue() {
+            return new Object();
+        }
+    };
 
     public HandlerThreadExecutor() {
         HandlerThread handlerThread = new HandlerThread("EventBusHandlerThread");
@@ -35,5 +42,17 @@ public class HandlerThreadExecutor implements Executor {
                 }
             }
         });
+    }
+
+    @Override
+    public Object submit(final Method method, final Object paramObj, final Object obj) {
+        CountDownLatch doneSignal = new CountDownLatch(1);
+        MyRunnable myRunnable = new MyRunnable(doneSignal,method,paramObj,obj);
+        mHandler.post(myRunnable);
+        try {
+            doneSignal.await();
+        } catch (InterruptedException ignore) {
+        }
+        return myRunnable.getReturnValue();
     }
 }

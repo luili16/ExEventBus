@@ -2,10 +2,14 @@ package com.llx278.exeventbus.execute;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
+ *
  * Created by llx on 2018/2/5.
  */
 
@@ -30,5 +34,22 @@ public class PoolThreadExecutor implements Executor {
                 }
             }
         });
+    }
+
+    @Override
+    public Object submit(final Method method, final Object paramObj, final Object obj) {
+
+        try {
+            return mExecutor.submit(new Callable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    return method.invoke(obj,paramObj);
+                }
+            }).get();
+        } catch (InterruptedException ignore) {
+            return null;
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

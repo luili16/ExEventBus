@@ -8,8 +8,13 @@ import com.llx278.exeventbus.entry.SubscribeEntry1;
 import com.llx278.exeventbus.entry.SubscribeEntry2;
 import com.llx278.exeventbus.entry.SubscribeEntry3;
 import com.llx278.exeventbus.entry.SubscribeEntry4;
+import com.llx278.exeventbus.entry.SubscribeEntry6;
 import com.llx278.exeventbus.event.Event1;
 import com.llx278.exeventbus.event.Event3;
+import com.llx278.exeventbus.event.Event4;
+import com.llx278.exeventbus.event.Event5;
+import com.llx278.exeventbus.event.Event6;
+import com.llx278.exeventbus.event.Event7;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,6 +49,40 @@ public class EventBusTest {
     public void tearDown() {
     }
 
+    @Test
+    public void blockReturn() throws Exception {
+        SubscribeEntry6 subscribeEntry6 = new SubscribeEntry6();
+        EventBus.getDefault().register(subscribeEntry6);
+
+        Event7 event7 = new Event7("event7");
+        Object returnValue = EventBus.getDefault().post(event7, "event7", String.class);
+        assertNotNull(returnValue);
+        assertEquals(String.class,returnValue.getClass());
+        assertEquals("return_event7",returnValue);
+
+        Event6 event6 = new Event6("event6");
+        Object returnValue1 = EventBus.getDefault().post(event6,"event6",String.class);
+        assertNotNull(returnValue1);
+        assertEquals(String.class,returnValue1.getClass());
+        assertEquals("return_event6",returnValue1);
+
+        Event5 event5 = new Event5("event5");
+        Object returnValue2 = EventBus.getDefault().post(event5,"event5",String.class);
+        assertNotNull(returnValue2);
+        assertEquals(String.class,returnValue1.getClass());
+        assertEquals("return_event5",returnValue2);
+
+        Event4 event4 = new Event4("event4");
+        Object returnValue3 = EventBus.getDefault().post(event4,"event4",String.class);
+        assertNotNull(returnValue3);
+        assertEquals(String.class,returnValue1.getClass());
+        assertEquals("return_event4",returnValue3);
+
+        EventBus.getDefault().unRegister(subscribeEntry6);
+
+        Map map = getSubscribeMap();
+        assertEquals(0,map.size());
+    }
 
     @Test
     public void postToMainThread() throws Exception {
@@ -291,7 +330,8 @@ public class EventBusTest {
         Field mSubScribeHolderField = aClass.getDeclaredField("mSubScribeHolder");
         mSubScribeHolderField.setAccessible(true);
         Object mSubscribeHolder = mSubScribeHolderField.get(eb);
-        Field mSubscribeMapField = mSubscribeHolder.getClass().getDeclaredField("mSubscribeMap");
+        Field mSubscribeMapField = mSubscribeHolder.getClass().getDeclaredField("mDefaultMap");
+        mSubscribeMapField.setAccessible(true);
         return (Map) mSubscribeMapField.get(mSubscribeHolder);
     }
 }

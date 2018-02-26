@@ -1,9 +1,6 @@
 package com.llx278.exeventbus;
 
-import android.util.Log;
-
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -18,9 +15,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 class SubscribeHolder {
 
     /**
-     * 所有注册事件的映射
+     * 默认注册事件的映射
      */
-    final Map<EventType,CopyOnWriteArrayList<Subscription>> mSubscribeMap = new ConcurrentHashMap<>();
+    private final Map<Event,CopyOnWriteArrayList<Subscription>> mDefaultMap = new ConcurrentHashMap<>();
 
     /**
      * 将传入的subscribe中所有被{@link Subscriber}所修饰的方法保存
@@ -36,14 +33,16 @@ class SubscribeHolder {
                     Class<?>[] parameterTypes = method.getParameterTypes();
                     if (parameterTypes != null && parameterTypes.length == 1) {
                         Class<?> paramType = convertType(parameterTypes[0]);
-                        EventType eventType = new EventType(annotation.tag(),paramType);
-                        CopyOnWriteArrayList<Subscription> subscriptionList = mSubscribeMap.get(eventType);
+                        Class<?> returnType = method.getReturnType();
+                        Event defaultEvent = new Event(annotation.tag(),paramType,returnType);
+                        CopyOnWriteArrayList<Subscription> subscriptionList = mDefaultMap.get(defaultEvent);
                         if (subscriptionList == null) {
                             subscriptionList = new CopyOnWriteArrayList<>();
                         }
-                        Subscription subscription = new Subscription(subscribe,method,annotation.mode());
+                        Type type = annotation.type();
+                        Subscription subscription = new Subscription(subscribe,method,annotation.model(),type);
                         subscriptionList.add(subscription);
-                        mSubscribeMap.put(eventType,subscriptionList);
+                        mDefaultMap.put(defaultEvent,subscriptionList);
                     }
                 }
             } // end for
@@ -56,10 +55,10 @@ class SubscribeHolder {
      * @param subscribe 订阅事件
      */
     void remove(Object subscribe) {
-        Set<Map.Entry<EventType, CopyOnWriteArrayList<Subscription>>> entries = mSubscribeMap.entrySet();
-        Iterator<Map.Entry<EventType, CopyOnWriteArrayList<Subscription>>> entriesIterator = entries.iterator();
+        Set<Map.Entry<Event, CopyOnWriteArrayList<Subscription>>> entries = mDefaultMap.entrySet();
+        Iterator<Map.Entry<Event, CopyOnWriteArrayList<Subscription>>> entriesIterator = entries.iterator();
         while (entriesIterator.hasNext()) {
-            Map.Entry<EventType, CopyOnWriteArrayList<Subscription>> entry = entriesIterator.next();
+            Map.Entry<Event, CopyOnWriteArrayList<Subscription>> entry = entriesIterator.next();
             CopyOnWriteArrayList<Subscription> subscriptionList = entry.getValue();
             if (subscriptionList != null) {
                 for (Subscription subscription : subscriptionList) {
@@ -75,6 +74,10 @@ class SubscribeHolder {
                 }
             }
         }
+    }
+
+    CopyOnWriteArrayList<Subscription> get(Event event) {
+        return mDefaultMap.get(event);
     }
 
     private Class<?> convertType(Class<?> eventType) {

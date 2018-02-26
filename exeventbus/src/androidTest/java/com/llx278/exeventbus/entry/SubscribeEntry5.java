@@ -38,7 +38,7 @@ public class SubscribeEntry5 {
         EventBus.getDefault().unRegister(this);
     }
 
-    @Subscriber(mode = ThreadModel.MAIN,tag = "event6")
+    @Subscriber(model = ThreadModel.MAIN,tag = "event6")
     public void event1Method(Event6 event6) {
         assertNotNull(event6);
         assertEquals(event6.msg,"event6");
@@ -48,7 +48,7 @@ public class SubscribeEntry5 {
         }
     }
 
-    @Subscriber(mode = ThreadModel.HANDLER,tag = "event4")
+    @Subscriber(model = ThreadModel.HANDLER,tag = "event4")
     public void event1Method1(Event4 event4) {
         assertNotNull(event4);
         assertEquals(event4.msg,"event4");
@@ -58,7 +58,7 @@ public class SubscribeEntry5 {
         }
     }
 
-    @Subscriber(mode = ThreadModel.POOL,tag = "event5")
+    @Subscriber(model = ThreadModel.POOL,tag = "event5")
     public String event2Method(Event5 event5) {
 
         assertNotNull(event5);

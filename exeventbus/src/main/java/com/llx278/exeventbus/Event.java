@@ -1,17 +1,14 @@
 package com.llx278.exeventbus;
 
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 /**
- * EventType代表一个用{@link Subscriber}所注解的方法的唯一标志
+ * 代表一个订阅事件
  * 这里面用传入方法的参数的class和tag来作为这个唯一标志
  * Created by llx on 2018/2/4.
  */
 
-final class EventType {
-
-    static final String DEFAULT_TAG = "DefaultTag";
+public final class Event {
 
     /**
      * 事件对象的参数类型
@@ -22,9 +19,15 @@ final class EventType {
      */
     private final String mTag;
 
-    EventType(@NonNull String tag, @NonNull Class<?> paramClass) {
+    /**
+     * 事件对象返回值的参数类型
+     */
+    private final Class<?> mReturnClass;
+
+    public Event(@NonNull String tag, @NonNull Class<?> paramClass,@NonNull Class<?> returnClass) {
         mTag = tag;
         mParamClass = paramClass;
+        mReturnClass = returnClass;
     }
 
     @Override
@@ -32,25 +35,18 @@ final class EventType {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        EventType eventType = (EventType) o;
+        Event event = (Event) o;
 
-        //noinspection SimplifiableIfStatement
-        if (!mParamClass.equals(eventType.mParamClass)) return false;
-        return mTag.equals(eventType.mTag);
+        if (!mParamClass.equals(event.mParamClass)) return false;
+        if (!mTag.equals(event.mTag)) return false;
+        return mReturnClass.equals(event.mReturnClass);
     }
 
     @Override
     public int hashCode() {
         int result = mParamClass.hashCode();
         result = 31 * result + mTag.hashCode();
+        result = 31 * result + mReturnClass.hashCode();
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "EventType{" +
-                "mParamClass=" + mParamClass +
-                ", mTag='" + mTag + '\'' +
-                '}';
     }
 }

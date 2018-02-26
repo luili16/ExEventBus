@@ -14,11 +14,13 @@ class Subscription {
     final WeakReference<Object> mSubscribeRef;
     final Method mMethod;
     final ThreadModel mThreadModel;
+    final Type mType;
 
-    Subscription(@NonNull Object param, @NonNull Method method, @NonNull ThreadModel threadModel) {
+    Subscription(@NonNull Object param, @NonNull Method method, @NonNull ThreadModel threadModel,@NonNull Type type) {
         mSubscribeRef = new WeakReference<Object>(param);
         mMethod = method;
         mThreadModel = threadModel;
+        mType = type;
     }
 
     @Override
@@ -30,7 +32,8 @@ class Subscription {
 
         if (!mSubscribeRef.equals(that.mSubscribeRef)) return false;
         if (!mMethod.equals(that.mMethod)) return false;
-        return mThreadModel == that.mThreadModel;
+        if (mThreadModel != that.mThreadModel) return false;
+        return mType == that.mType;
     }
 
     @Override
@@ -38,15 +41,7 @@ class Subscription {
         int result = mSubscribeRef.hashCode();
         result = 31 * result + mMethod.hashCode();
         result = 31 * result + mThreadModel.hashCode();
+        result = 31 * result + mType.hashCode();
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "Subscription{" +
-                "mSubscribeRef=" + mSubscribeRef +
-                ", mMethod=" + mMethod +
-                ", mThreadModel=" + mThreadModel +
-                '}';
     }
 }

@@ -1,6 +1,7 @@
 package com.llx278.exeventbus.execute;
 
 import com.llx278.exeventbus.ThreadModel;
+import com.llx278.exeventbus.Type;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

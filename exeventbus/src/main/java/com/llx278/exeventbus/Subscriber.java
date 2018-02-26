@@ -1,5 +1,7 @@
 package com.llx278.exeventbus;
 
+
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,14 +14,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Subscriber {
+
+    /**
+     * 订阅事件的类型，描述了EventBus该如何处理此订阅事件
+     */
+    Type type() default Type.DEFAULT;
+
     /**
      * 订阅事件的tag，同订阅的参数一起标识一个订阅事件
      */
-    String tag() default EventType.DEFAULT_TAG;
+    String tag();
 
     /**
      * 订阅事件执行的线程，默认是在主线程
      */
-    ThreadModel mode() default ThreadModel.MAIN;
-
+    ThreadModel model() default ThreadModel.MAIN;
 }

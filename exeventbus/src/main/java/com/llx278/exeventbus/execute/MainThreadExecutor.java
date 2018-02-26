@@ -5,6 +5,7 @@ import android.os.Looper;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * 发布的时间执行在主线程
@@ -33,5 +34,17 @@ public class MainThreadExecutor implements Executor {
                 }
             }
         });
+    }
+
+    @Override
+    public Object submit(Method method, Object paramObj, Object obj) {
+        CountDownLatch doneSignal = new CountDownLatch(1);
+        MyRunnable myRunnable = new MyRunnable(doneSignal,method,paramObj,obj);
+        mHandler.post(myRunnable);
+        try {
+            doneSignal.await();
+        } catch (InterruptedException ignore) {
+        }
+        return myRunnable.getReturnValue();
     }
 }

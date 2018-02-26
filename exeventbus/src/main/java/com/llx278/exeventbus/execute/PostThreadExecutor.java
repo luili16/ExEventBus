@@ -14,7 +14,7 @@ public class PostThreadExecutor implements Executor {
     }
 
     @Override
-    public void execute(Method method, Object paramObj,Object obj) {
+    public void execute(Method method, Object paramObj, Object obj) {
         try {
             method.invoke(obj,paramObj);
         } catch (IllegalAccessException ignore) {
@@ -22,5 +22,17 @@ public class PostThreadExecutor implements Executor {
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Object submit(Method method, Object paramObj, Object obj) {
+        try {
+            return method.invoke(obj,paramObj);
+        } catch (IllegalAccessException ignore) {
+            // never happen
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 }

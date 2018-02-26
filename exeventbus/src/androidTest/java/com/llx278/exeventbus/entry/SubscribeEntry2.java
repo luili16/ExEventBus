@@ -5,11 +5,9 @@ import android.util.Log;
 import com.llx278.exeventbus.EventBus;
 import com.llx278.exeventbus.Subscriber;
 import com.llx278.exeventbus.ThreadModel;
-import com.llx278.exeventbus.event.Event1;
 import com.llx278.exeventbus.event.Event2;
 import com.llx278.exeventbus.event.Event3;
 import com.llx278.exeventbus.event.Event4;
-import com.llx278.exeventbus.event.Event5;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -40,7 +38,7 @@ public class SubscribeEntry2 {
         EventBus.getDefault().unRegister(this);
     }
 
-    @Subscriber(mode = ThreadModel.HANDLER,tag = "event3")
+    @Subscriber(model = ThreadModel.HANDLER,tag = "event3")
     public void event3Method(Event3 event3) {
         assertNotNull(event3);
         assertEquals(event3.msg,"event3");
@@ -50,7 +48,7 @@ public class SubscribeEntry2 {
         }
     }
 
-    @Subscriber(mode = ThreadModel.POOL,tag = "event4")
+    @Subscriber(model = ThreadModel.POOL,tag = "event4")
     public void event4Method(Event4 event4) {
         assertNotNull(event4);
         assertEquals(event4.msg,"event4");
@@ -60,7 +58,7 @@ public class SubscribeEntry2 {
         }
     }
 
-    @Subscriber(mode = ThreadModel.MAIN,tag = "event2")
+    @Subscriber(model = ThreadModel.MAIN,tag = "event2")
     public void event5Method(Event2 event2) {
         assertNotNull(event2);
         assertEquals(event2.msg,"event2");

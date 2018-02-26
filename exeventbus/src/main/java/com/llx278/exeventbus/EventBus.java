@@ -1,7 +1,6 @@
 package com.llx278.exeventbus;
 
-import android.os.Bundle;
-import android.util.Log;
+import android.text.TextUtils;
 
 import com.llx278.exeventbus.execute.Executor;
 import com.llx278.exeventbus.execute.ExecutorFactory;
@@ -9,20 +8,20 @@ import com.llx278.exeventbus.execute.ExecutorFactory;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- *
  * Created by llx on 2018/2/4.
  */
 public class EventBus {
     private static EventBus sEventBus;
     private final SubscribeHolder mSubScribeHolder;
-    private EventBus(){
+
+    private EventBus() {
         mSubScribeHolder = new SubscribeHolder();
     }
 
     public static EventBus getDefault() {
-        if(sEventBus == null) {
+        if (sEventBus == null) {
             synchronized (EventBus.class) {
-                if(sEventBus == null) {
+                if (sEventBus == null) {
                     sEventBus = new EventBus();
                 }
             }
@@ -32,6 +31,7 @@ public class EventBus {
 
     /**
      * 向EventBus上面注册一个subscriber
+     *
      * @param subscriber 待注册的subscriber
      */
     public void register(Object subscriber) {
@@ -44,6 +44,7 @@ public class EventBus {
 
     /**
      * 从EventBus上面取消一个subscriber
+     *
      * @param subscriber 待取消的subscriber
      */
     public void unRegister(Object subscriber) {
@@ -53,38 +54,40 @@ public class EventBus {
         mSubScribeHolder.remove(subscriber);
     }
 
-    /**
-     * 向EventBus上面发布一个事件
-     */
-    public void post(Object event) {
-        post(event,EventType.DEFAULT_TAG);
-    }
-
-    public void post(Object event,String tag) {
-        if (event == null) {
-            Logger.e("EventBus.post(Object,String) param Object is null!!",null);
+    public void post(Object event, String tag) {
+        if (event == null || TextUtils.isEmpty(tag)) {
+            Logger.e("EventBus.post(Object,String) param Object or tag is null!!", null);
             return;
         }
+        post(event,tag,void.class);
+    }
 
-        EventType eventType = new EventType(tag,event.getClass());
-        CopyOnWriteArrayList<Subscription> subscriptionList = mSubScribeHolder.mSubscribeMap.get(eventType);
+    public Object post(Object eventObj, String tag,Class<?> returnClass) {
+        if (eventObj == null || TextUtils.isEmpty(tag)) {
+            Logger.e("EventBus.post(Object,String,Class) param Object or tag or class is null!!", null);
+            return null;
+        }
+
+        Event event = new Event(tag, eventObj.getClass(), returnClass);
+        CopyOnWriteArrayList<Subscription> subscriptionList = mSubScribeHolder.get(event);
         if (subscriptionList != null) {
             for (Subscription subs : subscriptionList) {
+
                 Executor executor = ExecutorFactory.createExecutor(subs.mThreadModel);
                 Object subscribe = subs.mSubscribeRef.get();
                 if (subscribe != null) {
-                    executor.execute(subs.mMethod, event, subs.mSubscribeRef.get());
+                    if (subs.mType == Type.BLOCK_RETURN) {
+                        // 因为返回值只能有一个,所以默认只是第一个注册的有效!!
+                        if (subscriptionList.size() > 1) {
+                            throw new RuntimeException("Type.BLOCK_RETURN subscriptionList.size() > 1!");
+                        }
+                        return executor.submit(subs.mMethod,eventObj,subscribe);
+                    } else if (subs.mType == Type.DEFAULT) {
+                        executor.execute(subs.mMethod, eventObj, subscribe);
+                    }
                 }
             }
         }
-    }
-
-    public <T> T postAndReturn(Object event,Class<T> returnClass){
-        return postAndReturn(event,EventType.DEFAULT_TAG,returnClass);
-    }
-
-    public <T> T postAndReturn(Object event,String tag,Class<T> returnClass) {
-
         return null;
     }
 }
