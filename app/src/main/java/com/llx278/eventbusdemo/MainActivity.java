@@ -29,16 +29,7 @@ public class MainActivity extends AppCompatActivity {
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EventBus.getDefault().post("hello from service",MainActivity.MAIN_TAG);
-                Event1 event1 = new Event1();
-                event1.msg = "hello from type 1";
-                EventBus.getDefault().post(event1);
-                Event2 event2 = new Event2();
-                event2.msg = "hello from type 2";
-                EventBus.getDefault().post(event2);
-                Event3 event3 = new Event3();
-                event3.msg = "hello from type 3";
-                EventBus.getDefault().post(event3);
+
             }
         });
         textView = findViewById(R.id.text);
@@ -68,20 +59,5 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e("main",Log.getStackTraceString(e));
         }
-    }
-
-    @Subscriber
-    public void event1(Event1 event1) {
-        event1Text.setText(event1.msg);
-    }
-
-    @Subscriber
-    public void event2(Event2 event1) {
-        event2Text.setText(event1.msg);
-    }
-
-    @Subscriber
-    public void event3(Event3 event1) {
-        event3Text.setText(event1.msg);
     }
 }

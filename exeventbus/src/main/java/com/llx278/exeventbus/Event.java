@@ -1,5 +1,7 @@
 package com.llx278.exeventbus;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 /**
@@ -13,21 +15,23 @@ public final class Event {
     /**
      * 事件对象的参数类型
      */
-    private final Class<?> mParamClass;
+    final String mParamClassName;
+
     /**
      * 事件的tag
      */
-    private final String mTag;
+    final String mTag;
 
     /**
      * 事件对象返回值的参数类型
      */
-    private final Class<?> mReturnClass;
+    final String mReturnClassName;
 
-    public Event(@NonNull String tag, @NonNull Class<?> paramClass,@NonNull Class<?> returnClass) {
+
+    public Event(@NonNull String tag, @NonNull String paramClassName, @NonNull String returnClassName) {
         mTag = tag;
-        mParamClass = paramClass;
-        mReturnClass = returnClass;
+        mParamClassName = paramClassName;
+        mReturnClassName = returnClassName;
     }
 
     @Override
@@ -37,16 +41,16 @@ public final class Event {
 
         Event event = (Event) o;
 
-        if (!mParamClass.equals(event.mParamClass)) return false;
+        if (!mParamClassName.equals(event.mParamClassName)) return false;
         if (!mTag.equals(event.mTag)) return false;
-        return mReturnClass.equals(event.mReturnClass);
+        return mReturnClassName.equals(event.mReturnClassName);
     }
 
     @Override
     public int hashCode() {
-        int result = mParamClass.hashCode();
+        int result = mParamClassName.hashCode();
         result = 31 * result + mTag.hashCode();
-        result = 31 * result + mReturnClass.hashCode();
+        result = 31 * result + mReturnClassName.hashCode();
         return result;
     }
 }

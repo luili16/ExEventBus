@@ -1,93 +1,85 @@
 package com.llx278.exeventbus;
 
-import android.text.TextUtils;
+import android.content.Context;
 
-import com.llx278.exeventbus.execute.Executor;
-import com.llx278.exeventbus.execute.ExecutorFactory;
-
-import java.util.concurrent.CopyOnWriteArrayList;
+import com.llx278.exeventbus.remote.RemoteEventBus;
 
 /**
- * Created by llx on 2018/2/4.
+ *
+ * Created by llx on 2018/2/26.
  */
-public class EventBus {
-    private static EventBus sEventBus;
-    private final SubscribeHolder mSubScribeHolder;
 
-    private EventBus() {
-        mSubScribeHolder = new SubscribeHolder();
-    }
+public class EventBus extends AbsEventBus {
+
+    private static EventBus sEventBus;
 
     public static EventBus getDefault() {
+
         if (sEventBus == null) {
-            synchronized (EventBus.class) {
-                if (sEventBus == null) {
-                    sEventBus = new EventBus();
-                }
-            }
+            throw new IllegalStateException("you should call EventBus.init(Context) before use getDefault()");
         }
+
         return sEventBus;
     }
 
-    /**
-     * 向EventBus上面注册一个subscriber
-     *
-     * @param subscriber 待注册的subscriber
-     */
-    public void register(Object subscriber) {
-        if (subscriber == null) {
-            return;
-        }
-
-        mSubScribeHolder.put(subscriber);
-    }
-
-    /**
-     * 从EventBus上面取消一个subscriber
-     *
-     * @param subscriber 待取消的subscriber
-     */
-    public void unRegister(Object subscriber) {
-        if (subscriber == null) {
-            return;
-        }
-        mSubScribeHolder.remove(subscriber);
-    }
-
-    public void post(Object event, String tag) {
-        if (event == null || TextUtils.isEmpty(tag)) {
-            Logger.e("EventBus.post(Object,String) param Object or tag is null!!", null);
-            return;
-        }
-        post(event,tag,void.class);
-    }
-
-    public Object post(Object eventObj, String tag,Class<?> returnClass) {
-        if (eventObj == null || TextUtils.isEmpty(tag)) {
-            Logger.e("EventBus.post(Object,String,Class) param Object or tag or class is null!!", null);
-            return null;
-        }
-
-        Event event = new Event(tag, eventObj.getClass(), returnClass);
-        CopyOnWriteArrayList<Subscription> subscriptionList = mSubScribeHolder.get(event);
-        if (subscriptionList != null) {
-            for (Subscription subs : subscriptionList) {
-
-                Executor executor = ExecutorFactory.createExecutor(subs.mThreadModel);
-                Object subscribe = subs.mSubscribeRef.get();
-                if (subscribe != null) {
-                    if (subs.mType == Type.BLOCK_RETURN) {
-                        // 因为返回值只能有一个,所以默认只是第一个注册的有效!!
-                        if (subscriptionList.size() > 1) {
-                            throw new RuntimeException("Type.BLOCK_RETURN subscriptionList.size() > 1!");
-                        }
-                        return executor.submit(subs.mMethod,eventObj,subscribe);
-                    } else if (subs.mType == Type.DEFAULT) {
-                        executor.execute(subs.mMethod, eventObj, subscribe);
-                    }
+    public static void init(Context context) {
+        if (sEventBus == null) {
+            synchronized (EventBus.class) {
+                if(sEventBus == null) {
+                    sEventBus = new EventBus(new AbsEventBus(),new RemoteEventBus(context));
                 }
             }
         }
-        return null;
+    }
+
+    public static void destroy() {
+        if (sEventBus != null) {
+            sEventBus = null;
+        }
+    }
+
+    private final AbsEventBus mAbsEventBus;
+    private final RemoteEventBus mRemoteEventBus;
+
+    private EventBus(AbsEventBus absEventBus,RemoteEventBus remoteEventBus) {
+        mAbsEventBus = absEventBus;
+        mRemoteEventBus = remoteEventBus;
+    }
+
+    @Override
+    public void register(Object subscriber) {
+        mAbsEventBus.register(subscriber);
+    }
+
+    @Override
+    public void unRegister(Object subscriber) {
+        mAbsEventBus.unRegister(subscriber);
+    }
+
+    @Override
+    public void post(Object eventObj, String tag) {
+
+        mAbsEventBus.post(eventObj,tag);
+    }
+
+    @Override
+    public Object post(Object eventObj, String tag, String returnClass) {
+        return mAbsEventBus.post(eventObj,tag,returnClass);
+    }
+
+    @Override
+    public Object post(Object eventObj, String tag, String returnClassName, boolean remote) {
+
+        if (remote) {
+
+
+        }
+
+        return mAbsEventBus.post(eventObj,tag,returnClassName,remote);
+    }
+
+    @Override
+    SubscribeHolder getSubscribeHolder() {
+        return mAbsEventBus.getSubscribeHolder();
     }
 }

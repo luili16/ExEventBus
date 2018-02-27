@@ -1,7 +1,9 @@
 package com.llx278.exeventbus;
 
+import android.content.Context;
 import android.os.SystemClock;
 import android.support.test.runner.AndroidJUnit4;
+import android.test.mock.MockContext;
 import android.util.Log;
 
 import com.llx278.exeventbus.entry.SubscribeEntry1;
@@ -22,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,16 +38,20 @@ import static junit.framework.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
 public class EventBusTest {
+
     public EventBusTest() {
     }
 
 
     @Before
     public void setUp() {
+        Context context = new MockContext();
+        EventBus.init(context);
     }
 
     @After
     public void tearDown() {
+        EventBus.destroy();
     }
 
     @Test
@@ -55,25 +60,25 @@ public class EventBusTest {
         EventBus.getDefault().register(subscribeEntry6);
 
         Event7 event7 = new Event7("event7");
-        Object returnValue = EventBus.getDefault().post(event7, "event7", String.class);
+        Object returnValue = EventBus.getDefault().post(event7, "event7", String.class.getName());
         assertNotNull(returnValue);
         assertEquals(String.class,returnValue.getClass());
         assertEquals("return_event7",returnValue);
 
         Event6 event6 = new Event6("event6");
-        Object returnValue1 = EventBus.getDefault().post(event6,"event6",String.class);
+        Object returnValue1 = EventBus.getDefault().post(event6,"event6",String.class.getName());
         assertNotNull(returnValue1);
         assertEquals(String.class,returnValue1.getClass());
         assertEquals("return_event6",returnValue1);
 
         Event5 event5 = new Event5("event5");
-        Object returnValue2 = EventBus.getDefault().post(event5,"event5",String.class);
+        Object returnValue2 = EventBus.getDefault().post(event5,"event5",String.class.getName());
         assertNotNull(returnValue2);
         assertEquals(String.class,returnValue1.getClass());
         assertEquals("return_event5",returnValue2);
 
         Event4 event4 = new Event4("event4");
-        Object returnValue3 = EventBus.getDefault().post(event4,"event4",String.class);
+        Object returnValue3 = EventBus.getDefault().post(event4,"event4",String.class.getName());
         assertNotNull(returnValue3);
         assertEquals(String.class,returnValue1.getClass());
         assertEquals("return_event4",returnValue3);
@@ -325,13 +330,7 @@ public class EventBusTest {
     }
 
     private Map getSubscribeMap() throws Exception {
-        EventBus eb = EventBus.getDefault();
-        Class<? extends EventBus> aClass = eb.getClass();
-        Field mSubScribeHolderField = aClass.getDeclaredField("mSubScribeHolder");
-        mSubScribeHolderField.setAccessible(true);
-        Object mSubscribeHolder = mSubScribeHolderField.get(eb);
-        Field mSubscribeMapField = mSubscribeHolder.getClass().getDeclaredField("mDefaultMap");
-        mSubscribeMapField.setAccessible(true);
-        return (Map) mSubscribeMapField.get(mSubscribeHolder);
+        EventBus aDefault = EventBus.getDefault();
+        return aDefault.getSubscribeHolder().getDefaultMap();
     }
 }

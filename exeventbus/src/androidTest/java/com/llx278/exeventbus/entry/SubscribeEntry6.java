@@ -1,8 +1,5 @@
 package com.llx278.exeventbus.entry;
 
-import android.util.Log;
-
-import com.llx278.exeventbus.Event;
 import com.llx278.exeventbus.EventBus;
 import com.llx278.exeventbus.Subscriber;
 import com.llx278.exeventbus.ThreadModel;

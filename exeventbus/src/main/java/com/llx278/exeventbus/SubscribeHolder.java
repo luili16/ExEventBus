@@ -34,7 +34,7 @@ class SubscribeHolder {
                     if (parameterTypes != null && parameterTypes.length == 1) {
                         Class<?> paramType = convertType(parameterTypes[0]);
                         Class<?> returnType = method.getReturnType();
-                        Event defaultEvent = new Event(annotation.tag(),paramType,returnType);
+                        Event defaultEvent = new Event(annotation.tag(),paramType.getName(),returnType.getName());
                         CopyOnWriteArrayList<Subscription> subscriptionList = mDefaultMap.get(defaultEvent);
                         if (subscriptionList == null) {
                             subscriptionList = new CopyOnWriteArrayList<>();
@@ -78,6 +78,10 @@ class SubscribeHolder {
 
     CopyOnWriteArrayList<Subscription> get(Event event) {
         return mDefaultMap.get(event);
+    }
+
+    Map<Event,CopyOnWriteArrayList<Subscription>> getDefaultMap() {
+        return mDefaultMap;
     }
 
     private Class<?> convertType(Class<?> eventType) {

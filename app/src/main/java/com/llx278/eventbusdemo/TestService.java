@@ -6,8 +6,6 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.llx278.exeventbus.EventBus;
-
 /**
  *
  * Created by llx on 2018/2/5.

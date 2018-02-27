@@ -13,7 +13,7 @@ import de.robv.android.xposed.XposedBridge;
  */
 
 public class Logger {
-    private static final String TAG = "ExEventBus";
+    private static final String TAG = "EventBusDecorator";
     private static final boolean DEBUG = true;
     private static final boolean XPOSED_ENABLE = false;
     private static final String SPILT = "  ";
