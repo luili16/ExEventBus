@@ -20,7 +20,7 @@ public enum  ThreadModel {
     /**
      * 在发布订阅事件的那个线程中执行
      */
-    POST("post"),
+    POST("publish"),
 
     /**
      * 在一个自定义的线程池中执行

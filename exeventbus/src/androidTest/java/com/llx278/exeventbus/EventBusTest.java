@@ -60,25 +60,25 @@ public class EventBusTest {
         EventBus.getDefault().register(subscribeEntry6);
 
         Event7 event7 = new Event7("event7");
-        Object returnValue = EventBus.getDefault().post(event7, "event7", String.class.getName());
+        Object returnValue = EventBus.getDefault().publish(event7, "event7", String.class.getName());
         assertNotNull(returnValue);
         assertEquals(String.class,returnValue.getClass());
         assertEquals("return_event7",returnValue);
 
         Event6 event6 = new Event6("event6");
-        Object returnValue1 = EventBus.getDefault().post(event6,"event6",String.class.getName());
+        Object returnValue1 = EventBus.getDefault().publish(event6,"event6",String.class.getName());
         assertNotNull(returnValue1);
         assertEquals(String.class,returnValue1.getClass());
         assertEquals("return_event6",returnValue1);
 
         Event5 event5 = new Event5("event5");
-        Object returnValue2 = EventBus.getDefault().post(event5,"event5",String.class.getName());
+        Object returnValue2 = EventBus.getDefault().publish(event5,"event5",String.class.getName());
         assertNotNull(returnValue2);
         assertEquals(String.class,returnValue1.getClass());
         assertEquals("return_event5",returnValue2);
 
         Event4 event4 = new Event4("event4");
-        Object returnValue3 = EventBus.getDefault().post(event4,"event4",String.class.getName());
+        Object returnValue3 = EventBus.getDefault().publish(event4,"event4",String.class.getName());
         assertNotNull(returnValue3);
         assertEquals(String.class,returnValue1.getClass());
         assertEquals("return_event4",returnValue3);
@@ -102,7 +102,7 @@ public class EventBusTest {
                     @Override
                     public void run() {
                         Event1 event1 = new Event1("event1");
-                        EventBus.getDefault().post(event1, "event1");
+                        EventBus.getDefault().publish(event1, "event1");
                     }
                 });
             } else {
@@ -110,7 +110,7 @@ public class EventBusTest {
                     @Override
                     public void run() {
                         Event3 event3 = new Event3("event3");
-                        EventBus.getDefault().post(event3,"event3");
+                        EventBus.getDefault().publish(event3,"event3");
                     }
                 });
             }
@@ -133,7 +133,7 @@ public class EventBusTest {
         subscribeEntry1.register();
         subscribeEntry2.register();
         Event3 event3 = new Event3("event3");
-        EventBus.getDefault().post(event3, "event3");
+        EventBus.getDefault().publish(event3, "event3");
         doneSignal.await();
         subscribeEntry1.unRegister();
         subscribeEntry2.unRegister();
@@ -297,7 +297,7 @@ public class EventBusTest {
                         executor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                EventBus.getDefault().post(o, tag);
+                                EventBus.getDefault().publish(o, tag);
                             }
                         });
 

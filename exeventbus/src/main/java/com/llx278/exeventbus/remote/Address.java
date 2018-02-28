@@ -1,6 +1,5 @@
 package com.llx278.exeventbus.remote;
 
-import android.content.Intent;
 import android.os.Process;
 import android.text.TextUtils;
 
@@ -44,6 +43,10 @@ public class Address {
         return new Address(Process.myPid());
     }
 
+    public static Address createAddress(int pid) {
+        return new Address(pid);
+    }
+
     public static Address parse(String address) {
 
         if (TextUtils.isEmpty(address)) {
@@ -61,12 +64,27 @@ public class Address {
         return addressObj;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Address address = (Address) o;
+
+        return mPid == address.mPid;
+    }
+
+    @Override
+    public int hashCode() {
+        return mPid;
+    }
+
     /**
      * 封装了对外注册相关的field
      */
     public static class Filter {
 
-        private static final String ACTION_RECEIVE = "com.llx278.exeventbus.remote.Receiver.receive";
+        private static final String ACTION_RECEIVE = "com.llx278.exeventbus.remote.ReceiverImpl.receive";
 
         private final String mAction;
         private Set<String> mCategories;
@@ -91,26 +109,34 @@ public class Address {
             return Collections.unmodifiableSet(mCategories);
         }
 
+        @Override
+        public String toString() {
+            return "Filter{" +
+                    "mAction='" + mAction + '\'' +
+                    ", mCategories=" + mCategories +
+                    '}';
+        }
+
         public static Filter createIntentBy(Address address) {
 
-            String ownCategory = null;
+            String category = null;
             String broadcastCategory = null;
             if (address != null) {
-                ownCategory = createOwnCategory(address);
+                category = createCategory(address);
             } else {
                 broadcastCategory = createBroadcastCategory();
             }
-            return new Filter(ACTION_RECEIVE,ownCategory,broadcastCategory);
+            return new Filter(ACTION_RECEIVE,category,broadcastCategory);
         }
 
         public static Filter crateIntentFilter() {
-            String ownCategory = createOwnCategory(Address.createOwnAddress());
+            String ownCategory = createCategory(Address.createOwnAddress());
             String broadcastCategory = createBroadcastCategory();
             return new Filter(ACTION_RECEIVE,ownCategory,broadcastCategory);
         }
 
-        private static String createOwnCategory(Address address) {
-            return "com.llx278.exeventbus.remote:" + Process.myPid();
+        private static String createCategory(Address address) {
+            return "com.llx278.exeventbus.remote:" + address.toString();
         }
 
         private static String createBroadcastCategory() {

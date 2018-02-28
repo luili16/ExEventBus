@@ -55,7 +55,7 @@ public class RemoteEventBus extends AbsEventBus {
     }
 
     @Override
-    public Object post(Object eventObj, String tag, String returnClassName) {
+    public Object publish(Object eventObj, String tag, String returnClassName) {
 
         Intent intent = new Intent();
         intent.setAction(Constant.ACTION_EVENT_CALLBACK);

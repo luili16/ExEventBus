@@ -42,21 +42,21 @@ public class AbsEventBus {
         mSubScribeHolder.remove(subscriber);
     }
 
-    public void post(Object eventObj, String tag) {
+    public void publish(Object eventObj, String tag) {
         if (eventObj == null || TextUtils.isEmpty(tag)) {
-            Logger.e("AbsEventBus.post(Object,String) param Object or tag is null!!", null);
+            Logger.e("AbsEventBus.publish(Object,String) param Object or tag is null!!", null);
             return;
         }
-        post(eventObj,tag,void.class.getName());
+        publish(eventObj,tag,void.class.getName());
     }
 
-    public Object post(Object eventObj, String tag,String returnClassName) {
-        return post(eventObj,tag,returnClassName,false);
+    public Object publish(Object eventObj, String tag, String returnClassName) {
+        return publish(eventObj,tag,returnClassName,false);
     }
 
-    public Object post(Object eventObj, String tag,String returnClassName,boolean remote) {
+    public Object publish(Object eventObj, String tag, String returnClassName, boolean remote) {
         if (eventObj == null || TextUtils.isEmpty(tag)) {
-            Logger.e("AbsEventBus.post(Object,String,Class) param Object or tag or class is null!!", null);
+            Logger.e("AbsEventBus.publish(Object,String,Class) param Object or tag or class is null!!", null);
             return null;
         }
 

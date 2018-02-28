@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- *
+ * 发布事件放到线程池中执行
  * Created by llx on 2018/2/5.
  */
 

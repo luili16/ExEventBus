@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 发布的时间执行在主线程
+ * 发布时执行在主线程
  * Created by llx on 2018/2/5.
  */
 

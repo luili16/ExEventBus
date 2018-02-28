@@ -57,25 +57,25 @@ public class EventBus extends AbsEventBus {
     }
 
     @Override
-    public void post(Object eventObj, String tag) {
+    public void publish(Object eventObj, String tag) {
 
-        mAbsEventBus.post(eventObj,tag);
+        mAbsEventBus.publish(eventObj,tag);
     }
 
     @Override
-    public Object post(Object eventObj, String tag, String returnClass) {
-        return mAbsEventBus.post(eventObj,tag,returnClass);
+    public Object publish(Object eventObj, String tag, String returnClass) {
+        return mAbsEventBus.publish(eventObj,tag,returnClass);
     }
 
     @Override
-    public Object post(Object eventObj, String tag, String returnClassName, boolean remote) {
+    public Object publish(Object eventObj, String tag, String returnClassName, boolean remote) {
 
         if (remote) {
 
 
         }
 
-        return mAbsEventBus.post(eventObj,tag,returnClassName,remote);
+        return mAbsEventBus.publish(eventObj,tag,returnClassName,remote);
     }
 
     @Override
