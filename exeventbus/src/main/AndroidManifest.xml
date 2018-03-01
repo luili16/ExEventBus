@@ -11,5 +11,9 @@
         <service android:name=".remote.test.TestService2" android:process=":remote2"/>
         <service android:name=".remote.test.TestService3" android:process=":remote3"/>
         <service android:name=".remote.test.TestService4" android:process=":remote4"/>
+        <service android:name=".remote.test.TestService5" android:process=":remote5"/>
+        <service android:name=".remote.test.TestService6" android:process=":remote6"/>
+        <service android:name=".remote.test.TestService7" android:process=":remote7"/>
+        <service android:name=".remote.test.TestService8" android:process=":remote8"/>
     </application>
 </manifest>

@@ -5,12 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
-
-import com.llx278.exeventbus.Logger;
-import com.llx278.exeventbus.remote.test.Util;
-
-import java.util.Set;
 
 /**
  * 对ITransferLayer的具体实现
@@ -19,17 +13,23 @@ import java.util.Set;
  * Created by llx on 2018/2/28.
  */
 
-public class TransferLayer implements ITransferLayer {
+public class MockPhysicalLayer implements IMockPhysicalLayer {
 
     private Context mContext;
     private FilterReceiver mFilterReceiver;
     private ReceiverListener mListener;
 
-    public TransferLayer(Context context) {
+    public MockPhysicalLayer(Context context) {
         mContext = context;
         register();
     }
 
+    @Override
+    public void init() {
+
+    }
+
+    @Override
     public void destroy() {
         mContext.unregisterReceiver(mFilterReceiver);
         mContext = null;
@@ -47,11 +47,8 @@ public class TransferLayer implements ITransferLayer {
         mContext.registerReceiver(mFilterReceiver,intentFilter);
     }
 
-
-
     @Override
     public void send(String address, Bundle message) {
-        Log.d("main",Util.getProcessName(mContext) + "准备发送-" + "发送地址:" + Address.createOwnAddress() + "-接收地址:"+address);
         Intent intent = new Intent();
         Address.Filter filter = Address.Filter.createIntentBy(Address.parse(address));
         intent.setAction(filter.getAction());
@@ -63,25 +60,18 @@ public class TransferLayer implements ITransferLayer {
         mContext.sendBroadcast(intent);
     }
 
-    @Override
     public void receive(final String where, final Bundle message) {
-        Log.d("main",Util.getProcessName(mContext) + "接收到消息-"+"发送地址:" + where);
         if (mListener != null) {
             mListener.onMessageReceive(where,message);
         }
     }
 
+    @Override
     public void setOnReceiveListener(ReceiverListener listener) {
         mListener = listener;
     }
 
-    /**
-     * 对外暴露一个接口，任何对接收到的消息感兴趣的类都可以通过MessageObserver来向TransferLayer注册，处理
-     * 接收到的消息
-     */
-    public interface ReceiverListener {
-        void onMessageReceive(String where,Bundle message);
-    }
+
 
     private class FilterReceiver extends BroadcastReceiver {
 
@@ -94,7 +84,7 @@ public class TransferLayer implements ITransferLayer {
                     return;
                 }
                 Bundle message = intent.getParcelableExtra(Constant.KEY_MESSAGE);
-                TransferLayer.this.receive(where,message);
+                MockPhysicalLayer.this.receive(where,message);
             }
         }
     }

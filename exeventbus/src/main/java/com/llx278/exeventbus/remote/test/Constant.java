@@ -10,4 +10,6 @@ public class Constant {
     public static final String KEY_RECEIVE = "key_receive";
     public static final String BROADCAST_MESSAGE = "broadcast_messsage";
 
+    public static final String KEY_MY_OWN_ADDRESS = "key_my_own_address";
+
 }

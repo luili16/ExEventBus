@@ -4,13 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ServiceTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+//import com.llx278.exeventbus.IMyTestInterface;
 import com.llx278.exeventbus.IMyTestInterface;
 import com.llx278.exeventbus.remote.test.*;
 import com.llx278.exeventbus.remote.test.Constant;
@@ -30,19 +30,22 @@ import java.util.concurrent.TimeUnit;
  * Created by llx on 2018/2/28.
  */
 @RunWith(AndroidJUnit4.class)
-public class TransferLayerTest implements TransferLayer.ReceiverListener {
+public class MockPhysicalLayerTest implements MockPhysicalLayer.ReceiverListener {
 
-    private TransferLayer mTransferLayer;
+
+    private MockPhysicalLayer mMockPhysicalLayer;
     private IMyTestInterface mTest1;
     private IMyTestInterface mTest2;
     private IMyTestInterface mTest3;
     private IMyTestInterface mTest4;
 
+    private boolean hasReceive;
+
 
     @Before
     public void setUp() throws Exception {
-        mTransferLayer = new TransferLayer(InstrumentationRegistry.getTargetContext());
-        mTransferLayer.setOnReceiveListener(this);
+        mMockPhysicalLayer = new MockPhysicalLayer(InstrumentationRegistry.getTargetContext());
+        mMockPhysicalLayer.setOnReceiveListener(this);
         Context context = InstrumentationRegistry.getTargetContext();
         Intent intent1 = new Intent(context, TestService1.class);
         IBinder binder1 = mServiceRule.bindService(intent1);
@@ -60,46 +63,31 @@ public class TransferLayerTest implements TransferLayer.ReceiverListener {
 
     @After
     public void tearDown() {
-        mTransferLayer.destroy();
+        mMockPhysicalLayer.destroy();
     }
 
     @Rule
     public final ServiceTestRule mServiceRule = new ServiceTestRule();
 
 
-    /**
-     * 测试向进程发送消息
-     *
-     * @throws Exception
-     */
     @Test
-    public void messageSend() throws Exception {
+    public void sendMessage() throws Exception {
 
         clearAll();
         Bundle message = new Bundle();
         String receiveStr = "receive";
         message.putString(Constant.KEY_RECEIVE, receiveStr);
+        Address address1 = createTest1Address();
+        mMockPhysicalLayer.send(address1.toString(), message);
 
-        String processName1 = mTest1.getProcessName();
-        // 模拟向TestService1所在的进程发送消息
-        int pid1 = Integer.parseInt(processName1.split("-")[1]);
-        Address address1 = Address.createAddress(pid1);
-        mTransferLayer.send(address1.toString(), message);
+        Address address2 = createTest2Address();
+        mMockPhysicalLayer.send(address2.toString(), message);
 
-        String processName2 = mTest2.getProcessName();
-        int pid2 = Integer.parseInt(processName2.split("-")[1]);
-        Address address2 = Address.createAddress(pid2);
-        mTransferLayer.send(address2.toString(), message);
+        Address address3 = createTest3Address();
+        mMockPhysicalLayer.send(address3.toString(), message);
 
-        String processName3 = mTest3.getProcessName();
-        int pid3 = Integer.parseInt(processName3.split("-")[1]);
-        Address address3 = Address.createAddress(pid3);
-        mTransferLayer.send(address3.toString(), message);
-
-        String processName4 = mTest4.getProcessName();
-        int pid4 = Integer.parseInt(processName4.split("-")[1]);
-        Address address4 = Address.createAddress(pid4);
-        mTransferLayer.send(address4.toString(), message);
+        Address address4 = createTest4Address();
+        mMockPhysicalLayer.send(address4.toString(), message);
 
         String expectedStr1 = receiveStr + ":" + address1.toString();
         String expectedStr2 = receiveStr + ":" + address2.toString();
@@ -125,11 +113,32 @@ public class TransferLayerTest implements TransferLayer.ReceiverListener {
         Assert.assertTrue(isReceive);
     }
 
-    /**
-     * 测试向多个进程发送广播消息
-     *
-     * @throws Exception
-     */
+    private Address createTest1Address() throws Exception {
+        String processName1 = mTest1.getProcessName();
+        // 模拟向TestService1所在的进程发送消息
+        int pid1 = Integer.parseInt(processName1.split("-")[1]);
+        return Address.createAddress(pid1);
+    }
+
+    private Address createTest2Address() throws Exception {
+        String processName2 = mTest2.getProcessName();
+        int pid2 = Integer.parseInt(processName2.split("-")[1]);
+        return Address.createAddress(pid2);
+    }
+
+    private Address createTest3Address() throws Exception {
+        String processName3 = mTest3.getProcessName();
+        int pid3 = Integer.parseInt(processName3.split("-")[1]);
+        return Address.createAddress(pid3);
+    }
+
+    private Address createTest4Address() throws Exception {
+        String processName4 = mTest4.getProcessName();
+        int pid4 = Integer.parseInt(processName4.split("-")[1]);
+        return Address.createAddress(pid4);
+    }
+
+
     @Test
     public void messageBroadcast() throws Exception {
 
@@ -137,7 +146,7 @@ public class TransferLayerTest implements TransferLayer.ReceiverListener {
         // 模拟向其他进程发送广播消息
         Bundle message = new Bundle();
         message.putString(Constant.KEY_BROADCAST, Constant.BROADCAST_MESSAGE);
-        mTransferLayer.send(null, message);
+        mMockPhysicalLayer.send(null, message);
         long timeout = 2000;
         boolean receive = false;
         long endTime = SystemClock.uptimeMillis() + timeout;
@@ -158,6 +167,16 @@ public class TransferLayerTest implements TransferLayer.ReceiverListener {
         Assert.assertTrue(receive);
     }
 
+    @Test
+    public void messageReceive() throws Exception {
+        clearAll();
+        hasReceive = false;
+        CountDownLatch mReceiveSignal = new CountDownLatch(1);
+        mTest1.mockSendMessage(Address.createOwnAddress().toString(), null);
+        mReceiveSignal.await(2,TimeUnit.SECONDS);
+        Assert.assertTrue(hasReceive);
+    }
+
     private void clearAll() throws Exception {
         mTest1.clear();
         mTest2.clear();
@@ -167,5 +186,17 @@ public class TransferLayerTest implements TransferLayer.ReceiverListener {
 
     @Override
     public void onMessageReceive(String where, Bundle message) {
+        // 接收返回的消息
+
+        try {
+            Log.d("main","where : " + where);
+            Assert.assertEquals(createTest1Address().toString(),where);
+            String address = message.getString(Constant.KEY_MY_OWN_ADDRESS);
+            Log.d("main","address : " + address);
+            Assert.assertEquals(createTest1Address().toString(),address);
+            hasReceive = true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -13,7 +13,7 @@ import android.util.Log;
 
 import com.llx278.exeventbus.IMyTestInterface;
 import com.llx278.exeventbus.remote.Address;
-import com.llx278.exeventbus.remote.TransferLayer;
+import com.llx278.exeventbus.remote.MockPhysicalLayer;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ import java.util.List;
  * Created by llx on 2018/2/28.
  */
 
-public class TestService1 extends Service implements TransferLayer.ReceiverListener {
+public class TestService1 extends Service implements MockPhysicalLayer.ReceiverListener {
 
     private String mBroadcastStr;
     private String mReceiveStr;
@@ -44,19 +44,37 @@ public class TestService1 extends Service implements TransferLayer.ReceiverListe
         }
 
         @Override
+        public void mockSendMessage(String address, Bundle message) throws RemoteException {
+            Log.d("main","TestService1 : mockSendMessage");
+            Bundle message1 = new Bundle();
+            message1.putString(Constant.KEY_MY_OWN_ADDRESS,Address.createOwnAddress().toString());
+            mTransferLayer.send(address,message1);
+        }
+
+        @Override
+        public boolean mockSendMessage1(String address, Bundle message, long timeout) throws RemoteException {
+            return false;
+        }
+
+        @Override
+        public void mockSendBroadcast(Bundle message) throws RemoteException {
+
+        }
+
+        @Override
         public void clear() throws RemoteException {
             mBroadcastStr = null;
             mReceiveStr = null;
         }
     };
 
-    private TransferLayer mTransferLayer;
+    private MockPhysicalLayer mTransferLayer;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
-        mTransferLayer = new TransferLayer(this);
+        mTransferLayer = new MockPhysicalLayer(this);
         mTransferLayer.setOnReceiveListener(this);
     }
 
