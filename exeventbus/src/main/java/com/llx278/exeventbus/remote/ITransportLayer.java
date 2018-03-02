@@ -3,6 +3,8 @@ package com.llx278.exeventbus.remote;
 import android.os.Bundle;
 import android.os.Message;
 
+import com.llx278.exeventbus.exception.TimeoutException;
+
 /**
  * 此接口实现进程间可靠的数据通讯
  * Created by llx on 2018/2/28.
@@ -21,7 +23,7 @@ public interface ITransportLayer {
      * @param timeout 超时时间 ms
      * @return true 消息已经发送到了相应的进程，false 发送失败
      */
-    void send(String address,Bundle message,long timeout);
+    void send(String address,Bundle message,long timeout) throws TimeoutException;
 
     /**
      * 发送一条广播消息

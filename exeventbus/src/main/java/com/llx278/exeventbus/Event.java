@@ -10,7 +10,7 @@ import android.support.annotation.NonNull;
  * Created by llx on 2018/2/4.
  */
 
-public final class Event {
+public final class Event implements Parcelable {
 
     /**
      * 事件对象的参数类型
@@ -34,6 +34,24 @@ public final class Event {
         mReturnClassName = returnClassName;
     }
 
+    protected Event(Parcel in) {
+        mParamClassName = in.readString();
+        mTag = in.readString();
+        mReturnClassName = in.readString();
+    }
+
+    public static final Creator<Event> CREATOR = new Creator<Event>() {
+        @Override
+        public Event createFromParcel(Parcel in) {
+            return new Event(in);
+        }
+
+        @Override
+        public Event[] newArray(int size) {
+            return new Event[size];
+        }
+    };
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -52,5 +70,26 @@ public final class Event {
         result = 31 * result + mTag.hashCode();
         result = 31 * result + mReturnClassName.hashCode();
         return result;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mParamClassName);
+        dest.writeString(mTag);
+        dest.writeString(mReturnClassName);
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "mParamClassName='" + mParamClassName + '\'' +
+                ", mTag='" + mTag + '\'' +
+                ", mReturnClassName='" + mReturnClassName + '\'' +
+                '}';
     }
 }

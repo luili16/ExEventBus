@@ -39,6 +39,7 @@ public class MockPhysicalLayerTest implements MockPhysicalLayer.ReceiverListener
     private IMyTestInterface mTest3;
     private IMyTestInterface mTest4;
 
+    private CountDownLatch mReceiveSignal;
     private boolean hasReceive;
 
 
@@ -140,7 +141,7 @@ public class MockPhysicalLayerTest implements MockPhysicalLayer.ReceiverListener
 
 
     @Test
-    public void messageBroadcast() throws Exception {
+    public void broadcastMessage() throws Exception {
 
         clearAll();
         // 模拟向其他进程发送广播消息
@@ -168,10 +169,10 @@ public class MockPhysicalLayerTest implements MockPhysicalLayer.ReceiverListener
     }
 
     @Test
-    public void messageReceive() throws Exception {
+    public void receiveMessage() throws Exception {
         clearAll();
         hasReceive = false;
-        CountDownLatch mReceiveSignal = new CountDownLatch(1);
+        mReceiveSignal = new CountDownLatch(1);
         mTest1.mockSendMessage(Address.createOwnAddress().toString(), null);
         mReceiveSignal.await(2,TimeUnit.SECONDS);
         Assert.assertTrue(hasReceive);
@@ -195,6 +196,7 @@ public class MockPhysicalLayerTest implements MockPhysicalLayer.ReceiverListener
             Log.d("main","address : " + address);
             Assert.assertEquals(createTest1Address().toString(),address);
             hasReceive = true;
+            mReceiveSignal.countDown();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -11,6 +11,7 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.llx278.exeventbus.IMyTestInterface;
 import com.llx278.exeventbus.remote.test.*;
+import com.llx278.exeventbus.remote.test.Constant;
 
 import junit.framework.Assert;
 
@@ -20,7 +21,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 测试TransportLayer
@@ -30,11 +32,17 @@ import java.util.concurrent.TimeoutException;
 @RunWith(AndroidJUnit4.class)
 public class TransportLayerTest implements ITransportLayer.ReceiverListener {
 
+    public static final String RECEIVE_MESSAGE_KEY = "receive_Key";
+    public static final String RECEIVE_MESSAGE_BODY = "receive_body";
+
     private TransportLayer mTransportLayer;
     private IMyTestInterface mTest5;
     private IMyTestInterface mTest6;
     private IMyTestInterface mTest7;
     private IMyTestInterface mTest8;
+
+    private boolean hasReceive;
+    private CountDownLatch mSignal;
 
     @Rule
     public final ServiceTestRule mServiceRule = new ServiceTestRule();
@@ -112,6 +120,56 @@ public class TransportLayerTest implements ITransportLayer.ReceiverListener {
         Assert.assertTrue(isReceive);
     }
 
+    @Test(expected = com.llx278.exeventbus.exception.TimeoutException.class)
+    public void sendMessageWithException() throws Exception {
+        // 创建一个不存在的地址
+        mTransportLayer.send(Address.createAddress(385738).toString(),new Bundle(),2000);
+    }
+
+    @Test
+    public void broadcastMessage() throws Exception {
+
+        clearAll();
+        // 模拟向其他进程发送广播消息
+        Bundle message = new Bundle();
+        message.putString(Constant.KEY_BROADCAST,Constant.BROADCAST_MESSAGE);
+        mTransportLayer.sendBroadcast(message);
+        long timeout = 2000;
+        boolean receive = false;
+        long endTime = SystemClock.uptimeMillis() + timeout;
+        while (SystemClock.uptimeMillis() < endTime) {
+            String broadcastStr5 = mTest5.getBroadcastStr();
+            String broadcastStr6 = mTest6.getBroadcastStr();
+            String broadcastStr7 = mTest7.getBroadcastStr();
+            String broadcastStr8 = mTest8.getBroadcastStr();
+            if (Constant.BROADCAST_MESSAGE.equals(broadcastStr5) &&
+                    Constant.BROADCAST_MESSAGE.equals(broadcastStr6) &&
+                    Constant.BROADCAST_MESSAGE.equals(broadcastStr7) &&
+                    Constant.BROADCAST_MESSAGE.equals(broadcastStr8)) {
+                receive = true;
+                break;
+            }
+            Thread.sleep(100);
+        }
+        Assert.assertTrue(receive);
+    }
+
+    @Test
+    public void receiveMessage() throws Exception {
+
+        clearAll();
+
+        hasReceive = false;
+        mSignal = new CountDownLatch(1);
+        Bundle message = new Bundle();
+        message.putString(RECEIVE_MESSAGE_KEY,RECEIVE_MESSAGE_BODY);
+        mTest5.mockSendMessage1(Address.createOwnAddress().toString(),message,1000);
+        mSignal.await(2, TimeUnit.SECONDS);
+        Assert.assertTrue(hasReceive);
+    }
+
+
+
     private Address createTest8Address() throws Exception {
         String processName1 = mTest8.getProcessName();
         // 模拟向TestService1所在的进程发送消息
@@ -147,6 +205,16 @@ public class TransportLayerTest implements ITransportLayer.ReceiverListener {
 
     @Override
     public void onMessageReceive(String where, Bundle message) {
-
+        try {
+            Assert.assertEquals(createTest5Address().toString(),where);
+            String from = message.getString(Constant.KEY_MY_OWN_ADDRESS);
+            Assert.assertEquals(createTest5Address().toString(),from);
+            String body = message.getString(RECEIVE_MESSAGE_KEY);
+            Assert.assertEquals(RECEIVE_MESSAGE_BODY,body);
+            hasReceive = true;
+            mSignal.countDown();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

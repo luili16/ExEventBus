@@ -8,20 +8,35 @@ import com.llx278.exeventbus.execute.ExecutorFactory;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Created by llx on 2018/2/4.
+ * 对IEventBus的具体实现
+ * Created by llx on 2018/3/2.
  */
-public class AbsEventBus {
+
+public class EventBusImpl implements EventBus {
+
+    private static EventBusImpl sEventBusImpl;
+
+    public static EventBusImpl getDefault() {
+
+        if (sEventBusImpl == null) {
+            synchronized (EventBusImpl.class) {
+                if (sEventBusImpl == null) {
+                    sEventBusImpl = new EventBusImpl();
+                }
+            }
+        }
+        return sEventBusImpl;
+    }
+
+
     private final SubscribeHolder mSubScribeHolder;
 
-    public AbsEventBus() {
+
+    private EventBusImpl() {
         mSubScribeHolder = new SubscribeHolder();
     }
 
-    /**
-     * 向EventBus上面注册一个subscriber
-     *
-     * @param subscriber 待注册的subscriber
-     */
+    @Override
     public void register(Object subscriber) {
         if (subscriber == null) {
             return;
@@ -30,11 +45,7 @@ public class AbsEventBus {
         mSubScribeHolder.put(subscriber);
     }
 
-    /**
-     * 从EventBus上面取消一个subscriber
-     *
-     * @param subscriber 待取消的subscriber
-     */
+    @Override
     public void unRegister(Object subscriber) {
         if (subscriber == null) {
             return;
@@ -42,21 +53,19 @@ public class AbsEventBus {
         mSubScribeHolder.remove(subscriber);
     }
 
+    @Override
     public void publish(Object eventObj, String tag) {
         if (eventObj == null || TextUtils.isEmpty(tag)) {
-            Logger.e("AbsEventBus.publish(Object,String) param Object or tag is null!!", null);
+            Logger.e("LocalEventBus.publish(Object,String) param Object or tag is null!!", null);
             return;
         }
         publish(eventObj,tag,void.class.getName());
     }
 
+    @Override
     public Object publish(Object eventObj, String tag, String returnClassName) {
-        return publish(eventObj,tag,returnClassName,false);
-    }
-
-    public Object publish(Object eventObj, String tag, String returnClassName, boolean remote) {
         if (eventObj == null || TextUtils.isEmpty(tag)) {
-            Logger.e("AbsEventBus.publish(Object,String,Class) param Object or tag or class is null!!", null);
+            Logger.e("LocalEventBus.publish(Object,String,Class) param Object or tag or class is null!!", null);
             return null;
         }
 
@@ -83,9 +92,4 @@ public class AbsEventBus {
     SubscribeHolder getSubscribeHolder() {
         return mSubScribeHolder;
     }
-
-    public void cleanUp() {
-
-    }
-
 }

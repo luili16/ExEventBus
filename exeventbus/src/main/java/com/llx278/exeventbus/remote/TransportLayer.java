@@ -47,13 +47,13 @@ public class TransportLayer implements ITransportLayer {
     }
 
     @Override
-    public void send(String address, Bundle message, long timeout) throws TimeoutException {
+    public void send(String address, Bundle message, long timeout) {
         String id = address + "#" + UUID.randomUUID();
         Log.d("main","send id : " + id);
         // 对每一个待发送的消息添加一个id，这个id唯一的标识了一条消息
         // 最好的形式是将这个id作为message的消息头，但是这里用的bundle，无法做字符串的拼接
         // 因此，这里存在的隐患就是如果message中存在着某个字段与KEY_ID相同的话会导致覆盖掉消息体的内容
-        // 目前只能讲KEY_ID这个字符串尽量设计的复杂一些，但实际上key都应该是有意义的字符串，如果真的一致了
+        // 目前只能将KEY_ID这个字符串尽量设计的复杂一些，但实际上key都应该是有意义的字符串，如果真的一致了
         // 那...该买彩票了!
         message.putString(KEY_ID, id);
         mTransferLayer.send(address,message);
@@ -90,8 +90,11 @@ public class TransportLayer implements ITransportLayer {
         // 接收到了一条消息，发送确认消息，并剥离KEY_ID,
         // 防止干扰上层的业务
         String id = message.getString(KEY_ID);
-        sendAck(where,id);
-        message.putString(KEY_ID,null);
+        if (!TextUtils.isEmpty(id)) {
+            sendAck(where,id);
+            message.putString(KEY_ID,null);
+        }
+
         if (mListener != null) {
             mListener.onMessageReceive(where,message);
         }

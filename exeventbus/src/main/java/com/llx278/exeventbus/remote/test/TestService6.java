@@ -108,7 +108,9 @@ public class TestService6 extends Service implements TransportLayer.ReceiverList
     public void onMessageReceive(String where, Bundle message) {
         mBroadcastStr = message.getString(Constant.KEY_BROADCAST);
         mReceiveStr = message.getString(Constant.KEY_RECEIVE) + ":" + Address.createOwnAddress();
-        Log.d("main","TestService4 : " + mReceiveStr);
+        Log.d("main","TestService6-broadcastStr : " + mBroadcastStr);
+        Log.d("main","TestService6-receiveStr : " + mReceiveStr);
+
     }
 
     private class Holder  {
