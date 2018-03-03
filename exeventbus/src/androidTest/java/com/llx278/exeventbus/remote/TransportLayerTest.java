@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @RunWith(AndroidJUnit4.class)
-public class TransportLayerTest implements ITransportLayer.ReceiverListener {
+public class TransportLayerTest implements Receiver {
 
     public static final String RECEIVE_MESSAGE_KEY = "receive_Key";
     public static final String RECEIVE_MESSAGE_BODY = "receive_body";

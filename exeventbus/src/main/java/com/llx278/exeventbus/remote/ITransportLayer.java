@@ -1,7 +1,6 @@
 package com.llx278.exeventbus.remote;
 
 import android.os.Bundle;
-import android.os.Message;
 
 import com.llx278.exeventbus.exception.TimeoutException;
 
@@ -30,14 +29,6 @@ public interface ITransportLayer {
      */
     void sendBroadcast(Bundle message);
 
-    void setOnReceiveListener(ITransportLayer.ReceiverListener listener);
-
-    /**
-     * 对外暴露一个接口，任何对接收到的消息感兴趣的类都可以通过ReceiverListener来向ITransportLayer注册，处理
-     * 接收到的消息
-     */
-    interface ReceiverListener {
-        void onMessageReceive(String where,Bundle message);
-    }
+    void setOnReceiveListener(Receiver listener);
 
 }

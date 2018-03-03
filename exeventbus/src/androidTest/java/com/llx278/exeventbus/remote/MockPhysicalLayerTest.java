@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  * Created by llx on 2018/2/28.
  */
 @RunWith(AndroidJUnit4.class)
-public class MockPhysicalLayerTest implements MockPhysicalLayer.ReceiverListener {
+public class MockPhysicalLayerTest implements Receiver {
 
 
     private MockPhysicalLayer mMockPhysicalLayer;

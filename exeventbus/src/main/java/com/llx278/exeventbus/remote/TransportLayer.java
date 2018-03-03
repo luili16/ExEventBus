@@ -1,7 +1,6 @@
 package com.llx278.exeventbus.remote;
 
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -30,7 +29,7 @@ public class TransportLayer implements ITransportLayer {
     private final ConcurrentHashMap<String,CountDownLatch> mSignalMap = new ConcurrentHashMap<>();
 
 
-    private ReceiverListener mListener;
+    private Receiver mListener;
 
     public TransportLayer(IMockPhysicalLayer transferLayer) {
         mTransferLayer = transferLayer;
@@ -118,6 +117,7 @@ public class TransportLayer implements ITransportLayer {
                 CountDownLatch countDownLatch = mSignalMap.get(id);
                 if (countDownLatch != null) {
                     countDownLatch.countDown();
+                    mSignalMap.remove(id);
                     return true;
                 }
             }
@@ -126,14 +126,14 @@ public class TransportLayer implements ITransportLayer {
     }
 
     @Override
-    public void setOnReceiveListener(ITransportLayer.ReceiverListener listener) {
+    public void setOnReceiveListener(Receiver listener) {
         mListener = listener;
     }
 
     /**
      * 实现了ITransferLayer的消息通知接口
      */
-    private class TransferLayerReceiver implements IMockPhysicalLayer.ReceiverListener {
+    private class TransferLayerReceiver implements Receiver {
 
         @Override
         public void onMessageReceive(String where, Bundle message) {

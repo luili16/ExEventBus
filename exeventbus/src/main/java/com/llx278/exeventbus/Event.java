@@ -15,17 +15,17 @@ public final class Event implements Parcelable {
     /**
      * 事件对象的参数类型
      */
-    final String mParamClassName;
+    private final String mParamClassName;
 
     /**
      * 事件的tag
      */
-    final String mTag;
+    private final String mTag;
 
     /**
      * 事件对象返回值的参数类型
      */
-    final String mReturnClassName;
+    private final String mReturnClassName;
 
 
     public Event(@NonNull String tag, @NonNull String paramClassName, @NonNull String returnClassName) {
@@ -51,6 +51,18 @@ public final class Event implements Parcelable {
             return new Event[size];
         }
     };
+
+    public String getParamClassName() {
+        return mParamClassName;
+    }
+
+    public String getTag() {
+        return mTag;
+    }
+
+    public String getReturnClassName() {
+        return mReturnClassName;
+    }
 
     @Override
     public boolean equals(Object o) {

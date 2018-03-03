@@ -15,6 +15,7 @@ import android.util.Log;
 import com.llx278.exeventbus.IMyTestInterface;
 import com.llx278.exeventbus.remote.Address;
 import com.llx278.exeventbus.remote.MockPhysicalLayer;
+import com.llx278.exeventbus.remote.Receiver;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ import java.util.List;
  * Created by llx on 2018/2/28.
  */
 
-public class TestService2 extends Service implements MockPhysicalLayer.ReceiverListener {
+public class TestService2 extends Service implements Receiver {
 
     private String mBroadcastStr;
     private String mReceiveStr;

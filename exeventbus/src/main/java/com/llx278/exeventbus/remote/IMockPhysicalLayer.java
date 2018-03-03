@@ -25,13 +25,5 @@ public interface IMockPhysicalLayer {
      * 设置监听接口
      * @param listener
      */
-    void setOnReceiveListener(ReceiverListener listener);
-
-    /**
-     * 对外暴露一个接口，任何对接收到的消息感兴趣的类都可以通过ReceiverListener来向TransferLayer注册，处理
-     * 接收到的消息
-     */
-    interface ReceiverListener {
-        void onMessageReceive(String where,Bundle message);
-    }
+    void setOnReceiveListener(Receiver listener);
 }

@@ -17,7 +17,7 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
 
     private Context mContext;
     private FilterReceiver mFilterReceiver;
-    private ReceiverListener mListener;
+    private Receiver mListener;
 
     public MockPhysicalLayer(Context context) {
         mContext = context;
@@ -67,7 +67,7 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
     }
 
     @Override
-    public void setOnReceiveListener(ReceiverListener listener) {
+    public void setOnReceiveListener(Receiver listener) {
         mListener = listener;
     }
 
