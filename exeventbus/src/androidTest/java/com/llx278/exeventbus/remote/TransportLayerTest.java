@@ -10,8 +10,7 @@ import android.support.test.rule.ServiceTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.llx278.exeventbus.IMyTestInterface;
-import com.llx278.exeventbus.remote.test.*;
-import com.llx278.exeventbus.remote.test.Constant;
+import com.llx278.exeventbus.Constant;
 
 import junit.framework.Assert;
 
@@ -83,7 +82,7 @@ public class TransportLayerTest implements Receiver {
 
         Bundle message = new Bundle();
         String receiveStr = "receive";
-        message.putString(com.llx278.exeventbus.remote.test.Constant.KEY_RECEIVE, receiveStr);
+        message.putString(Constant.KEY_RECEIVE, receiveStr);
         Address address5 = createTest5Address();
         mTransportLayer.send(address5.toString(),message,1000 * 2);
 

@@ -12,8 +12,7 @@ import android.util.Log;
 
 //import com.llx278.exeventbus.IMyTestInterface;
 import com.llx278.exeventbus.IMyTestInterface;
-import com.llx278.exeventbus.remote.test.*;
-import com.llx278.exeventbus.remote.test.Constant;
+import com.llx278.exeventbus.Constant;
 
 import junit.framework.Assert;
 

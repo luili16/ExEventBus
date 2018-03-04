@@ -26,7 +26,6 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
 
     @Override
     public void init() {
-
     }
 
     @Override

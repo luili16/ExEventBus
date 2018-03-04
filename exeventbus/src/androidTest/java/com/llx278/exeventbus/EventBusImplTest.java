@@ -138,14 +138,19 @@ public class EventBusImplTest {
 
         SubscribeEntry3 subscribeEntry3 = new SubscribeEntry3(null);
         SubscribeEntry4 subscribeEntry4 = new SubscribeEntry4(null);
-        EventBusImpl.getDefault().register(subscribeEntry3);
-        EventBusImpl.getDefault().register(subscribeEntry4);
+        List<Event> register3 = EventBusImpl.getDefault().register(subscribeEntry3);
+        assertEquals(2,register3.size());
+        List<Event> register4 = EventBusImpl.getDefault().register(subscribeEntry4);
+        assertEquals(2,register4.size());
+
         Map subscribeMap1 = getSubscribeMap();
         assertEquals(4, subscribeMap1.size());
-        EventBusImpl.getDefault().unRegister(subscribeEntry3);
+        List<Event> unregister3 = EventBusImpl.getDefault().unRegister(subscribeEntry3);
+        assertEquals(1,unregister3.size());
         Map subscribeMap2 = getSubscribeMap();
         assertEquals(3, subscribeMap2.size());
-        EventBusImpl.getDefault().unRegister(subscribeEntry4);
+        List<Event> unregister4 = EventBusImpl.getDefault().unRegister(subscribeEntry4);
+        assertEquals(3,unregister4.size());
         Map subscribeMap3 = getSubscribeMap();
         assertEquals(0, subscribeMap3.size());
     }
@@ -153,11 +158,22 @@ public class EventBusImplTest {
     @Test
     public void repeatSubscribe() throws Exception {
         SubscribeEntry3 subscribeEntry3 = new SubscribeEntry3(null);
-        EventBusImpl.getDefault().register(subscribeEntry3);
+        List<Event> register3 = EventBusImpl.getDefault().register(subscribeEntry3);
+        assertEquals(2,register3.size());
         Map subMap = getSubscribeMap();
         assertEquals(2, subMap.size());
-        EventBusImpl.getDefault().register(subscribeEntry3);
+        List<Event> register31 = EventBusImpl.getDefault().register(subscribeEntry3);
+        assertEquals(0,register31.size());
         assertEquals(2, subMap.size());
+        EventBusImpl.getDefault().unRegister(subscribeEntry3);
+    }
+
+    @Test
+    public void query() {
+        SubscribeEntry3 subscribeEntry3 = new SubscribeEntry3(null);
+        EventBusImpl.getDefault().register(subscribeEntry3);
+        List<Event> query = EventBusImpl.getDefault().query();
+        assertEquals(2,query.size());
         EventBusImpl.getDefault().unRegister(subscribeEntry3);
     }
 
@@ -325,6 +341,6 @@ public class EventBusImplTest {
 
     private Map getSubscribeMap() throws Exception {
         EventBusImpl aDefault = EventBusImpl.getDefault();
-        return aDefault.getSubscribeHolder().getDefaultMap();
+        return aDefault.getDefaultMap();
     }
 }

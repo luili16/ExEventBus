@@ -1,4 +1,4 @@
-package com.llx278.exeventbus.remote.test;
+package com.llx278.exeventbus.remote;
 
 import android.app.ActivityManager;
 import android.app.Service;
@@ -11,7 +11,8 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.llx278.exeventbus.IMyTestInterface;
+
+import com.llx278.exeventbus.*;
 import com.llx278.exeventbus.remote.Address;
 import com.llx278.exeventbus.remote.MockPhysicalLayer;
 import com.llx278.exeventbus.remote.Receiver;
@@ -24,7 +25,7 @@ import java.util.List;
  * Created by llx on 2018/2/28.
  */
 
-public class TestService6 extends Service implements Receiver {
+public class TestService5 extends Service implements Receiver {
 
     private String mBroadcastStr;
     private String mReceiveStr;
@@ -52,7 +53,10 @@ public class TestService6 extends Service implements Receiver {
 
         @Override
         public boolean mockSendMessage1(String address, Bundle message, long timeout) throws RemoteException {
-            mTransportLayer.send(address,message,timeout);
+
+            Bundle message1 = new Bundle(message);
+            message1.putString(com.llx278.exeventbus.Constant.KEY_MY_OWN_ADDRESS,Address.createOwnAddress().toString());
+            mTransportLayer.send(address,message1,timeout);
             return true;
         }
 
@@ -88,7 +92,6 @@ public class TestService6 extends Service implements Receiver {
     @Override
     public IBinder onBind(Intent intent) {
         return mTest;
-        //return null;
     }
 
     public Holder processName() {
@@ -107,10 +110,10 @@ public class TestService6 extends Service implements Receiver {
 
     @Override
     public void onMessageReceive(String where, Bundle message) {
-        mBroadcastStr = message.getString(Constant.KEY_BROADCAST);
-        mReceiveStr = message.getString(Constant.KEY_RECEIVE) + ":" + Address.createOwnAddress();
-        Log.d("main","TestService6-broadcastStr : " + mBroadcastStr);
-        Log.d("main","TestService6-receiveStr : " + mReceiveStr);
+        mBroadcastStr = message.getString(com.llx278.exeventbus.Constant.KEY_BROADCAST);
+        mReceiveStr = message.getString(com.llx278.exeventbus.Constant.KEY_RECEIVE) + ":" + Address.createOwnAddress();
+        Log.d("main","TestService5-broadcastStr : " + mBroadcastStr);
+        Log.d("main","TestService5-receiveStr : " + mReceiveStr);
 
     }
 

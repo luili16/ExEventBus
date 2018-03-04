@@ -1,4 +1,4 @@
-package com.llx278.exeventbus.remote.test;
+package com.llx278.exeventbus.remote;
 
 import android.app.ActivityManager;
 import android.app.Service;
@@ -11,20 +11,19 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.llx278.exeventbus.IMyTestInterface;
+
+import com.llx278.exeventbus.*;
 import com.llx278.exeventbus.remote.Address;
 import com.llx278.exeventbus.remote.MockPhysicalLayer;
 import com.llx278.exeventbus.remote.Receiver;
-import com.llx278.exeventbus.remote.TransportLayer;
 
 import java.util.List;
 
 /**
- *
  * Created by llx on 2018/2/28.
  */
 
-public class TestService8 extends Service implements Receiver {
+public class TestService2 extends Service implements Receiver {
 
     private String mBroadcastStr;
     private String mReceiveStr;
@@ -48,17 +47,17 @@ public class TestService8 extends Service implements Receiver {
 
         @Override
         public void mockSendMessage(String address, Bundle message) throws RemoteException {
+            mTransferLayer.send(address,message);
         }
 
         @Override
         public boolean mockSendMessage1(String address, Bundle message, long timeout) throws RemoteException {
-            mTransportLayer.send(address,message,timeout);
-            return true;
+            return false;
         }
 
         @Override
         public void mockSendBroadcast(Bundle message) throws RemoteException {
-            mTransportLayer.sendBroadcast(message);
+
         }
 
         @Override
@@ -68,27 +67,26 @@ public class TestService8 extends Service implements Receiver {
         }
     };
 
-    private TransportLayer mTransportLayer;
+    private MockPhysicalLayer mTransferLayer;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        MockPhysicalLayer mMockPhysicalLayer = new MockPhysicalLayer(this);
-        mTransportLayer = new TransportLayer(mMockPhysicalLayer);
-        mTransportLayer.setOnReceiveListener(this);
+        mTransferLayer = new MockPhysicalLayer(this);
+        mTransferLayer.setOnReceiveListener(this);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mTransportLayer.destroy();
+        mTransferLayer.destroy();
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return mTest;
-        //return null;
+       // return null;
     }
 
     public Holder processName() {
@@ -107,11 +105,9 @@ public class TestService8 extends Service implements Receiver {
 
     @Override
     public void onMessageReceive(String where, Bundle message) {
-        mBroadcastStr = message.getString(Constant.KEY_BROADCAST);
-        mReceiveStr = message.getString(Constant.KEY_RECEIVE) + ":" + Address.createOwnAddress();
-        Log.d("main","TestService8-broadcastStr : " + mBroadcastStr);
-        Log.d("main","TestService8-receiveStr : " + mReceiveStr);
-
+        mBroadcastStr = message.getString(com.llx278.exeventbus.Constant.KEY_BROADCAST);
+        mReceiveStr = message.getString(com.llx278.exeventbus.Constant.KEY_RECEIVE) + ":" + Address.createOwnAddress();
+        Log.d("main","TestService2 : " + mReceiveStr);
     }
 
     private class Holder  {

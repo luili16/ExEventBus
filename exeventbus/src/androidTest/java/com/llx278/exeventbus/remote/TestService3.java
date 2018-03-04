@@ -1,4 +1,4 @@
-package com.llx278.exeventbus.remote.test;
+package com.llx278.exeventbus.remote;
 
 import android.app.ActivityManager;
 import android.app.Service;
@@ -12,7 +12,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 
-import com.llx278.exeventbus.IMyTestInterface;
+import com.llx278.exeventbus.*;
 import com.llx278.exeventbus.remote.Address;
 import com.llx278.exeventbus.remote.MockPhysicalLayer;
 import com.llx278.exeventbus.remote.Receiver;
@@ -105,8 +105,8 @@ public class TestService3 extends Service implements Receiver {
 
     @Override
     public void onMessageReceive(String where, Bundle message) {
-        mBroadcastStr = message.getString(Constant.KEY_BROADCAST);
-        mReceiveStr = message.getString(Constant.KEY_RECEIVE) + ":" + Address.createOwnAddress();
+        mBroadcastStr = message.getString(com.llx278.exeventbus.Constant.KEY_BROADCAST);
+        mReceiveStr = message.getString(com.llx278.exeventbus.Constant.KEY_RECEIVE) + ":" + Address.createOwnAddress();
         Log.d("main","TestService3 : " + mReceiveStr);
     }
 

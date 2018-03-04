@@ -34,10 +34,6 @@ public class ExampleInstrumentedTest {
 
     @Test
     public void useAppContext() throws Exception {
-
-
-
-
     }
 
     public String processName(Context context) {

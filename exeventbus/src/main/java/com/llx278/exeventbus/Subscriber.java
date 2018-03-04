@@ -29,4 +29,9 @@ public @interface Subscriber {
      * 订阅事件执行的线程，默认是在主线程
      */
     ThreadModel model() default ThreadModel.MAIN;
+
+    /**
+     *此订阅事件是否可以跨进程执行，默认是false
+     */
+    boolean remote() default false;
 }

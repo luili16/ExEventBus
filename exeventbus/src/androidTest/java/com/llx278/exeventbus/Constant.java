@@ -1,4 +1,4 @@
-package com.llx278.exeventbus.remote.test;
+package com.llx278.exeventbus;
 
 /**
  * Created by llx on 2018/2/28.

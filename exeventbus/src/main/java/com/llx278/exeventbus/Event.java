@@ -27,17 +27,24 @@ public final class Event implements Parcelable {
      */
     private final String mReturnClassName;
 
+    /**
+     * 标志这个事件是否可以被其他进程执行
+     */
+    private final boolean mIsRemote;
 
-    public Event(@NonNull String tag, @NonNull String paramClassName, @NonNull String returnClassName) {
+
+    public Event(@NonNull String tag, @NonNull String paramClassName, @NonNull String returnClassName,boolean isRemote) {
         mTag = tag;
         mParamClassName = paramClassName;
         mReturnClassName = returnClassName;
+        mIsRemote = isRemote;
     }
 
     protected Event(Parcel in) {
         mParamClassName = in.readString();
         mTag = in.readString();
         mReturnClassName = in.readString();
+        mIsRemote = in.readByte() != 0;
     }
 
     public static final Creator<Event> CREATOR = new Creator<Event>() {
@@ -52,6 +59,53 @@ public final class Event implements Parcelable {
         }
     };
 
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mParamClassName);
+        dest.writeString(mTag);
+        dest.writeString(mReturnClassName);
+        dest.writeByte((byte) (mIsRemote ? 1 : 0));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Event event = (Event) o;
+
+        if (mIsRemote != event.mIsRemote) return false;
+        if (!mParamClassName.equals(event.mParamClassName)) return false;
+        if (!mTag.equals(event.mTag)) return false;
+        return mReturnClassName.equals(event.mReturnClassName);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mParamClassName.hashCode();
+        result = 31 * result + mTag.hashCode();
+        result = 31 * result + mReturnClassName.hashCode();
+        result = 31 * result + (mIsRemote ? 1 : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "mParamClassName='" + mParamClassName + '\'' +
+                ", mTag='" + mTag + '\'' +
+                ", mReturnClassName='" + mReturnClassName + '\'' +
+                ", mIsRemote=" + mIsRemote +
+                '}';
+    }
+
     public String getParamClassName() {
         return mParamClassName;
     }
@@ -64,44 +118,7 @@ public final class Event implements Parcelable {
         return mReturnClassName;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Event event = (Event) o;
-
-        if (!mParamClassName.equals(event.mParamClassName)) return false;
-        if (!mTag.equals(event.mTag)) return false;
-        return mReturnClassName.equals(event.mReturnClassName);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = mParamClassName.hashCode();
-        result = 31 * result + mTag.hashCode();
-        result = 31 * result + mReturnClassName.hashCode();
-        return result;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mParamClassName);
-        dest.writeString(mTag);
-        dest.writeString(mReturnClassName);
-    }
-
-    @Override
-    public String toString() {
-        return "Event{" +
-                "mParamClassName='" + mParamClassName + '\'' +
-                ", mTag='" + mTag + '\'' +
-                ", mReturnClassName='" + mReturnClassName + '\'' +
-                '}';
+    public boolean isIsRemote() {
+        return mIsRemote;
     }
 }
