@@ -29,7 +29,6 @@ public class ExEventBusTest {
     private IRouterInteractInterface mTest13;
 
 
-
     @Rule
     public final ServiceTestRule mServiceRule = new ServiceTestRule();
 
@@ -42,7 +41,17 @@ public class ExEventBusTest {
         IBinder binder10 = mServiceRule.bindService(intent10);
         mTest10 = IRouterInteractInterface.Stub.asInterface(binder10);
 
+        Intent intent11 = new Intent(context,TestService11.class);
+        IBinder binder11 = mServiceRule.bindService(intent11);
+        mTest11 = IRouterInteractInterface.Stub.asInterface(binder11);
 
+        Intent intent12 = new Intent(context,TestService12.class);
+        IBinder binder12 = mServiceRule.bindService(intent12);
+        mTest12 = IRouterInteractInterface.Stub.asInterface(binder12);
+
+        Intent intent13 = new Intent(context,TestService13.class);
+        IBinder binder13 = mServiceRule.bindService(intent13);
+        mTest13 = IRouterInteractInterface.Stub.asInterface(binder13);
     }
 
     @After
