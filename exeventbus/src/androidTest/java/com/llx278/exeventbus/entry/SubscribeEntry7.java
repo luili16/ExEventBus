@@ -13,6 +13,7 @@ import com.llx278.exeventbus.event.Event9;
 
 import java.util.concurrent.CountDownLatch;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
 /**
@@ -33,11 +34,10 @@ public class SubscribeEntry7 {
 
 
     @Subscriber(tag = "event8",model = ThreadModel.POOL,type = Type.BLOCK_RETURN,remote = true)
-    public String testMethod1(Event8 event8) {
+    public void testMethod1(Event8 event8) {
         assertNotNull(event8);
-        String returnStr = "return_" + event8.getMsg();
-        Log.d("main",returnStr);
-        return returnStr;
+        Log.d("main","SubscribeEntry7 : " + event8.getMsg());
+        assertEquals("event8",event8.getMsg());
     }
 
     @Subscriber(tag = "event9",model = ThreadModel.MAIN,type = Type.BLOCK_RETURN,remote = true)

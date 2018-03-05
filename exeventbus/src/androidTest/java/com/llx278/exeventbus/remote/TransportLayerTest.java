@@ -68,6 +68,7 @@ public class TransportLayerTest implements Receiver {
         IBinder binder8 = mServiceRule.bindService(intent8);
         mTest8 = IMyTestInterface.Stub.asInterface(binder8);
 
+
     }
 
     @After

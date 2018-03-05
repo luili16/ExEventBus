@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.llx278.exeventbus.entry.SubscribeEntry7;
 import com.llx278.exeventbus.entry.SubscribeEntry8;
+import com.llx278.exeventbus.entry.SubscribeEntry9;
 import com.llx278.exeventbus.remote.Address;
 
 /**
@@ -50,9 +51,8 @@ public class TestService11 extends Service {
         Log.d("main","testService11 onCreate");
         ExEventBus.create(this);
         mExEventBus = ExEventBus.getDefault();
-        SubscribeEntry8 subscribeEntry7 = new SubscribeEntry8(null);
+        SubscribeEntry9 subscribeEntry7 = new SubscribeEntry9(null);
         mExEventBus.register(subscribeEntry7);
-
     }
 
     @Override

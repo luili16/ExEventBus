@@ -34,7 +34,6 @@ class EventBus {
     EventBus() {
     }
 
-
     /**
      * 将此subscriber注册到EventBus上
      *
@@ -110,6 +109,12 @@ class EventBus {
         }
         isParcelable = false;
         isSerializable = false;
+
+        if (returnType.equals(void.class)) {
+            // 忽略返回值是void类型，因为void类型并不会向其他进程返回数据
+            return;
+        }
+
         Class<?>[] returnParamInterfaces = returnType.getInterfaces();
         if (returnParamInterfaces != null && returnParamInterfaces.length > 0) {
             for (Class<?> returnParamInterface : returnParamInterfaces) {

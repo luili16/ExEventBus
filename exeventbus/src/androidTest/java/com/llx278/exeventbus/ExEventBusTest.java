@@ -7,7 +7,9 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ServiceTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.test.runner.intent.IntentStubberRegistry;
+import android.util.Log;
 
+import com.llx278.exeventbus.event.Event8;
 import com.llx278.exeventbus.remote.TestService5;
 
 import org.junit.After;
@@ -28,7 +30,7 @@ public class ExEventBusTest {
     private IRouterInteractInterface mTest12;
     private IRouterInteractInterface mTest13;
 
-
+    private ExEventBus mExEventBus;
     @Rule
     public final ServiceTestRule mServiceRule = new ServiceTestRule();
 
@@ -52,18 +54,25 @@ public class ExEventBusTest {
         Intent intent13 = new Intent(context,TestService13.class);
         IBinder binder13 = mServiceRule.bindService(intent13);
         mTest13 = IRouterInteractInterface.Stub.asInterface(binder13);
+
+        ExEventBus.create(context);
+        mExEventBus = ExEventBus.getDefault();
     }
 
     @After
     public void after() {
+        ExEventBus.destroy();
     }
 
     /**
      * 测试发布一个不需要返回值的消息到其他进程
      */
     @Test
-    public void publishToOtherProcess() {
-
+    public void publishToOtherProcess() throws Exception {
+        Event8 event8 = new Event8("event8");
+        String tag = "event8";
+        Thread.sleep(5000);
+        mExEventBus.remotePublish(event8,tag,void.class.getName(),1000 * 2);
     }
 
     /**

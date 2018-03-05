@@ -8,6 +8,7 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.llx278.exeventbus.entry.SubscribeEntry11;
 import com.llx278.exeventbus.entry.SubscribeEntry7;
 import com.llx278.exeventbus.remote.Address;
 
@@ -46,12 +47,11 @@ public class TestService13 extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("main","testService9 onCreate");
+        Log.d("main","testService13 onCreate");
         ExEventBus.create(this);
         mExEventBus = ExEventBus.getDefault();
-        SubscribeEntry7 subscribeEntry7 = new SubscribeEntry7(null);
+        SubscribeEntry11 subscribeEntry7 = new SubscribeEntry11(null);
         mExEventBus.register(subscribeEntry7);
-
     }
 
     @Override

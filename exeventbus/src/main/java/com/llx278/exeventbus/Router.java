@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.llx278.exeventbus.exception.IllegalRemoteArgumentException;
 import com.llx278.exeventbus.exception.TimeoutException;
+import com.llx278.exeventbus.remote.Address;
 import com.llx278.exeventbus.remote.IMockPhysicalLayer;
 import com.llx278.exeventbus.remote.ITransportLayer;
 import com.llx278.exeventbus.remote.MockPhysicalLayer;
@@ -16,6 +17,7 @@ import com.llx278.exeventbus.remote.Receiver;
 import com.llx278.exeventbus.remote.TransportLayer;
 
 import java.io.Serializable;
+import java.security.acl.LastOwnerException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -165,13 +167,11 @@ public class Router implements Receiver {
         ArrayList<String> addressList = getAddressOf(event);
         // 先判断此事件是否已经被其他的进程注册了
         if (addressList.isEmpty()) {
+            Log.d("main","此事件还没有被其他进程注册!");
             return null;
         }
-
         if (returnClassName.equals(void.class.getName())) {
             for (String address : addressList) {
-                PublishHandler publishHandler = new PublishHandler(address);
-                publishHandler.publishToRemote(eventObject, tag, returnClassName, timeout);
                 route(address,eventObject,tag,returnClassName,timeout);
             }
         } else {
@@ -185,12 +185,7 @@ public class Router implements Receiver {
 
     /**
      * 将事件发送到指定进程执行
-     * @param address
-     * @param eventObject
-     * @param tag
-     * @param returnClassName
-     * @param timeout
-     * @return
+     * @return 返回执行的结果，如果方法的返回值是void，则默认返回null，如果不是，则返回执行后的结果
      */
     Object route(String address,Object eventObject, String tag, String returnClassName, long timeout) {
         PublishHandler publishHandler = new PublishHandler(address);
@@ -247,6 +242,7 @@ public class Router implements Receiver {
 
     public ArrayList<String> getAddressOf(Event event) {
         ArrayList<String> addressList = new ArrayList<>();
+        Log.d("main","当前进程里面 : " + mSubscribeEventList.toString());
         Set<Map.Entry<String, CopyOnWriteArrayList<Event>>> entries = mSubscribeEventList.entrySet();
         for (Map.Entry<String, CopyOnWriteArrayList<Event>> entry : entries) {
             CopyOnWriteArrayList<Event> eventValueList = entry.getValue();
@@ -323,6 +319,7 @@ public class Router implements Receiver {
 
         Object publishToRemote(Object eventObj, String tag, String returnClassName, long timeout)
                 throws TimeoutException {
+
             // 封装消息
             Bundle message = new Bundle();
             message.putString(KEY_TYPE, TYPE_VALUE_OF_PUBLISH);
@@ -339,10 +336,11 @@ public class Router implements Receiver {
             message.putString(KEY_RETURN_CLASS_NAME, returnClassName);
 
             if (returnClassName.equals(void.class.getName())) {
-                // 空类型不需要返回值
+                // 空类型直接发送，不需要等待返回值
                 mTransportLayer.send(mAddress, message, timeout);
+
             } else {
-                // 缓存执行的事件，等待执行结果的返回
+                // 其他类型需要缓存执行的事件，等待执行结果的返回
                 mWaitingExecuteReturnValueMap.put(mId, this);
                 long currentTime = SystemClock.uptimeMillis();
                 mTransportLayer.send(mAddress, message, timeout);
@@ -375,6 +373,7 @@ public class Router implements Receiver {
         public boolean handleMessage(String where, Bundle message) {
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_QUERY.equals(typeValue)) {
+                Log.d("main", Address.createOwnAddress().toString() + ":接收到了一个从其他进程发送的query事件");
                 ArrayList<Event> allEvents = mEventBus.query();
                 Bundle valueMessage = new Bundle();
                 valueMessage.putString(KEY_ID, UUID.randomUUID().toString());
@@ -402,6 +401,8 @@ public class Router implements Receiver {
 
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_QUERY_RESULT.equals(typeValue)) {
+                Log.d("main", Address.createOwnAddress().toString() + ":接收到了一个从其他进程发送的query结果事件");
+
                 ArrayList<Event> queryEvents = message.getParcelableArrayList(KEY_QUERY_LIST);
                 if (queryEvents != null) {
                     mSubscribeEventList.put(where, new CopyOnWriteArrayList<>(queryEvents));
@@ -432,7 +433,6 @@ public class Router implements Receiver {
                     }
                     events.addAll(newEvents);
                     mSubscribeEventList.put(where, events);
-                    Log.d("main", "mSubscribeEventList : " + mSubscribeEventList.toString());
                 }
                 return true;
             }
@@ -472,7 +472,6 @@ public class Router implements Receiver {
 
         @Override
         public boolean handleMessage(String where, Bundle message) {
-
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_PUBLISH.equals(typeValue)) {
                 // 执行一个发布的订阅事件
@@ -481,27 +480,29 @@ public class Router implements Receiver {
                 String tag = message.getString(KEY_TAG);
                 String returnClassName = message.getString(KEY_RETURN_CLASS_NAME);
                 Object returnValue = mEventBus.publish(eventObj, tag, returnClassName, true);
-                // 执行结束，将此消息发送回去
-                Bundle valueMessage = new Bundle();
-                valueMessage.putString(KEY_TYPE, TYPE_VALUE_OF_PUBLISH_RETURN_VALUE);
-                if (returnValue != null) {
-                    if (returnValue instanceof Serializable) {
-                        valueMessage.putSerializable(KEY_RETURN_VALUE, (Serializable) returnValue);
-                    } else if (returnValue instanceof Parcelable) {
-                        valueMessage.putParcelable(KEY_RETURN_VALUE, (Parcelable) returnValue);
-                    } else {
-                        throw new IllegalRemoteArgumentException("eventObj(" + returnValue.getClass().getName()
-                                + ") is not implement Serializable or Parcelable");
+                if(!TextUtils.isEmpty(returnClassName) && !returnClassName.equals(void.class.getName())) {
+                    // 只有返回值类型是非空的才会发送回去
+                    Bundle valueMessage = new Bundle();
+                    valueMessage.putString(KEY_TYPE, TYPE_VALUE_OF_PUBLISH_RETURN_VALUE);
+                    if (returnValue != null) {
+                        if (returnValue instanceof Serializable) {
+                            valueMessage.putSerializable(KEY_RETURN_VALUE, (Serializable) returnValue);
+                        } else if (returnValue instanceof Parcelable) {
+                            valueMessage.putParcelable(KEY_RETURN_VALUE, (Parcelable) returnValue);
+                        } else {
+                            throw new IllegalRemoteArgumentException("eventObj(" + returnValue.getClass().getName()
+                                    + ") is not implement Serializable or Parcelable");
+                        }
                     }
+                    valueMessage.putString(KEY_ID, id);
+                    try {
+                        mTransportLayer.send(where, valueMessage, sDefaultTimeout);
+                    } catch (TimeoutException e) {
+                        Logger.e(TAG, "send message[typeValue = " + typeValue + " rturnvalue = " +
+                                returnValue + "]", e);
+                    }
+                    return true;
                 }
-                valueMessage.putString(KEY_ID, id);
-                try {
-                    mTransportLayer.send(where, valueMessage, sDefaultTimeout);
-                } catch (TimeoutException e) {
-                    Logger.e(TAG, "send message[typeValue = " + typeValue + " rturnvalue = " +
-                            returnValue + "]", e);
-                }
-                return true;
             }
             return false;
         }
@@ -520,12 +521,14 @@ public class Router implements Receiver {
                 String id = message.getString(KEY_ID);
                 if (!TextUtils.isEmpty(id)) {
                     PublishHandler mWaitingPublishHandler = mWaitingExecuteReturnValueMap.get(id);
-                    mWaitingPublishHandler.mResult = returnValue;
-                    mWaitingPublishHandler.mHasResult = true;
-                    mWaitingPublishHandler.mDoneSignal.countDown();
-                    // 删除已经执行结束的事件
-                    mWaitingExecuteReturnValueMap.remove(id);
-                    return true;
+                    if (mWaitingPublishHandler != null) {
+                        mWaitingPublishHandler.mResult = returnValue;
+                        mWaitingPublishHandler.mHasResult = true;
+                        mWaitingPublishHandler.mDoneSignal.countDown();
+                        // 删除已经执行结束的事件
+                        mWaitingExecuteReturnValueMap.remove(id);
+                        return true;
+                    }
                 }
             }
             return false;

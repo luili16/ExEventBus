@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.llx278.exeventbus.entry.SubscribeEntry7;
+import com.llx278.exeventbus.entry.SubscribeEntry8;
 import com.llx278.exeventbus.remote.Address;
 
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ public class TestService10 extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d("main","TestService10 onBind");
         return mBinder;
     }
 
@@ -54,7 +56,7 @@ public class TestService10 extends Service {
         Log.d("main","testService10 onCreate");
         ExEventBus.create(this);
         mExEventBus = ExEventBus.getDefault();
-        SubscribeEntry7 subscribeEntry7 = new SubscribeEntry7(null);
+        SubscribeEntry8 subscribeEntry7 = new SubscribeEntry8(null);
         mExEventBus.register(subscribeEntry7);
     }
 

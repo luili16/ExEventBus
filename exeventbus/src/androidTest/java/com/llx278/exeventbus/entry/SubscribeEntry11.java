@@ -21,21 +21,21 @@ import static junit.framework.Assert.assertNotNull;
  * Created by llx on 2018/2/6.
  */
 
-public class SubscribeEntry9 {
+public class SubscribeEntry11 {
 
     private final CountDownLatch mDownSignal;
 
-    public SubscribeEntry9(CountDownLatch downSignal) {
+    public SubscribeEntry11(CountDownLatch downSignal) {
         mDownSignal = downSignal;
     }
-    public SubscribeEntry9() {
+    public SubscribeEntry11() {
         this(null);
     }
 
     @Subscriber(tag = "event8",model = ThreadModel.POOL,type = Type.DEFAULT,remote = true)
     public void testMethod1(Event8 event8) {
         assertNotNull(event8);
-        Log.d("main","SubscribeEntry9 : " + event8.getMsg());
+        Log.d("main","SubscribeEntry11 : " + event8.getMsg());
         assertEquals("event8",event8.getMsg());
     }
 

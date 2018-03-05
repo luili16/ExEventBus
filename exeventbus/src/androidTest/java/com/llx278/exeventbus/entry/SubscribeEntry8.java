@@ -1,6 +1,8 @@
 package com.llx278.exeventbus.entry;
 
 
+import android.util.Log;
+
 import com.llx278.exeventbus.Subscriber;
 import com.llx278.exeventbus.ThreadModel;
 import com.llx278.exeventbus.Type;
@@ -11,6 +13,7 @@ import com.llx278.exeventbus.event.Event9;
 
 import java.util.concurrent.CountDownLatch;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
 /**
@@ -30,10 +33,11 @@ public class SubscribeEntry8 {
         this(null);
     }
 
-    @Subscriber(tag = "event8", model = ThreadModel.POOL, type = Type.BLOCK_RETURN, remote = true)
-    public String testMethod1(Event8 event8) {
+    @Subscriber(tag = "event8", model = ThreadModel.POOL, type = Type.BLOCK_RETURN,remote = true)
+    public void testMethod1(Event8 event8) {
         assertNotNull(event8);
-        return "return_" + event8.getMsg();
+        Log.d("main","SubscribeEntry8 : " + event8.getMsg());
+        assertEquals("event8",event8.getMsg());
     }
 
     @Subscriber(tag = "event9", model = ThreadModel.MAIN, type = Type.BLOCK_RETURN, remote = true)
