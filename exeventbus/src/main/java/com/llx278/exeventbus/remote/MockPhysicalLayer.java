@@ -15,6 +15,8 @@ import android.os.Bundle;
 
 public class MockPhysicalLayer implements IMockPhysicalLayer {
 
+    private static final String KEY_WHERE = "com.llx278.exeventbus.remote.ReceiverImpl.key_where";
+    private static final String KEY_MESSAGE = "com.llx278.exeventbus.remote.ReceiverImpl.key_message";
     private Context mContext;
     private FilterReceiver mFilterReceiver;
     private Receiver mListener;
@@ -54,8 +56,8 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
         for (String category : filter.getCategories()) {
             intent.addCategory(category);
         }
-        intent.putExtra(Constant.KEY_WHERE, Address.createOwnAddress().toString());
-        intent.putExtra(Constant.KEY_MESSAGE,message);
+        intent.putExtra(KEY_WHERE, Address.createOwnAddress().toString());
+        intent.putExtra(KEY_MESSAGE,message);
         mContext.sendBroadcast(intent);
     }
 
@@ -78,11 +80,11 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (Address.Filter.isFilterAction(action)) {
-                String where = intent.getStringExtra(Constant.KEY_WHERE);
+                String where = intent.getStringExtra(KEY_WHERE);
                 if (Address.createOwnAddress().equals(Address.parse(where))) {
                     return;
                 }
-                Bundle message = intent.getParcelableExtra(Constant.KEY_MESSAGE);
+                Bundle message = intent.getParcelableExtra(KEY_MESSAGE);
                 MockPhysicalLayer.this.receive(where,message);
             }
         }

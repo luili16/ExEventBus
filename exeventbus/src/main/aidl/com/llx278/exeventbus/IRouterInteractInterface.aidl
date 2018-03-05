@@ -7,4 +7,8 @@ import com.llx278.exeventbus.Event;
 interface IRouterInteractInterface {
     // 获得add到当前进程的newEventList
     Event[] getAddRegisterEventList(String address);
+    // 获得当前进程的地址
+    String getAddress();
+    // 退出当前的进程
+    void killSelf();
 }

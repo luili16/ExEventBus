@@ -2,7 +2,6 @@ package com.llx278.exeventbus.entry;
 
 import android.util.Log;
 
-import com.llx278.exeventbus.EventBusImpl;
 import com.llx278.exeventbus.Subscriber;
 import com.llx278.exeventbus.ThreadModel;
 import com.llx278.exeventbus.event.Event4;
@@ -30,13 +29,6 @@ public class SubscribeEntry5 {
         this(null);
     }
 
-    public void register() {
-        EventBusImpl.getDefault().register(this);
-    }
-
-    public void unRegister() {
-        EventBusImpl.getDefault().unRegister(this);
-    }
 
     @Subscriber(model = ThreadModel.MAIN,tag = "event6")
     public void event1Method(Event6 event6) {

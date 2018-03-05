@@ -24,7 +24,7 @@ public class Address {
 
     private int mPid;
 
-    public Address(int pid) {
+    private Address(int pid) {
         mPid = pid;
     }
 

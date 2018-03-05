@@ -30,21 +30,21 @@ public final class Event implements Parcelable {
     /**
      * 标志这个事件是否可以被其他进程执行
      */
-    private final boolean mIsRemote;
+    private final boolean mRemote;
 
 
     public Event(@NonNull String tag, @NonNull String paramClassName, @NonNull String returnClassName,boolean isRemote) {
         mTag = tag;
         mParamClassName = paramClassName;
         mReturnClassName = returnClassName;
-        mIsRemote = isRemote;
+        mRemote = isRemote;
     }
 
     protected Event(Parcel in) {
         mParamClassName = in.readString();
         mTag = in.readString();
         mReturnClassName = in.readString();
-        mIsRemote = in.readByte() != 0;
+        mRemote = in.readByte() != 0;
     }
 
     public static final Creator<Event> CREATOR = new Creator<Event>() {
@@ -71,7 +71,7 @@ public final class Event implements Parcelable {
         dest.writeString(mParamClassName);
         dest.writeString(mTag);
         dest.writeString(mReturnClassName);
-        dest.writeByte((byte) (mIsRemote ? 1 : 0));
+        dest.writeByte((byte) (mRemote ? 1 : 0));
     }
 
     @Override
@@ -81,7 +81,7 @@ public final class Event implements Parcelable {
 
         Event event = (Event) o;
 
-        if (mIsRemote != event.mIsRemote) return false;
+        if (mRemote != event.mRemote) return false;
         if (!mParamClassName.equals(event.mParamClassName)) return false;
         if (!mTag.equals(event.mTag)) return false;
         return mReturnClassName.equals(event.mReturnClassName);
@@ -92,7 +92,7 @@ public final class Event implements Parcelable {
         int result = mParamClassName.hashCode();
         result = 31 * result + mTag.hashCode();
         result = 31 * result + mReturnClassName.hashCode();
-        result = 31 * result + (mIsRemote ? 1 : 0);
+        result = 31 * result + (mRemote ? 1 : 0);
         return result;
     }
 
@@ -102,7 +102,7 @@ public final class Event implements Parcelable {
                 "mParamClassName='" + mParamClassName + '\'' +
                 ", mTag='" + mTag + '\'' +
                 ", mReturnClassName='" + mReturnClassName + '\'' +
-                ", mIsRemote=" + mIsRemote +
+                ", mIsRemote=" + mRemote +
                 '}';
     }
 
@@ -118,7 +118,7 @@ public final class Event implements Parcelable {
         return mReturnClassName;
     }
 
-    public boolean isIsRemote() {
-        return mIsRemote;
+    public boolean isRemote() {
+        return mRemote;
     }
 }

@@ -2,7 +2,6 @@ package com.llx278.exeventbus.remote;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.llx278.exeventbus.exception.TimeoutException;
 
@@ -25,15 +24,15 @@ public class TransportLayer implements ITransportLayer {
     private static final String KEY_BODY = "JDIJF8958#*#&*Jfkdsjafkldajsfkld+-ajf*djfkdjfkdjfkdj#";
     private static final String BODY = "#ack#";
 
-    private final IMockPhysicalLayer mTransferLayer;
+    private final IMockPhysicalLayer mMockPhysicalLayer;
     private final ConcurrentHashMap<String,CountDownLatch> mSignalMap = new ConcurrentHashMap<>();
 
 
     private Receiver mListener;
 
     public TransportLayer(IMockPhysicalLayer transferLayer) {
-        mTransferLayer = transferLayer;
-        mTransferLayer.setOnReceiveListener(new TransferLayerReceiver());
+        mMockPhysicalLayer = transferLayer;
+        mMockPhysicalLayer.setOnReceiveListener(new TransferLayerReceiver());
     }
 
     @Override
@@ -42,20 +41,19 @@ public class TransportLayer implements ITransportLayer {
 
     @Override
     public void destroy() {
-        mTransferLayer.destroy();
+        mMockPhysicalLayer.destroy();
     }
 
     @Override
     public void send(String address, Bundle message, long timeout) {
         String id = address + "#" + UUID.randomUUID();
-        Log.d("main","send id : " + id);
         // 对每一个待发送的消息添加一个id，这个id唯一的标识了一条消息
         // 最好的形式是将这个id作为message的消息头，但是这里用的bundle，无法做字符串的拼接
         // 因此，这里存在的隐患就是如果message中存在着某个字段与KEY_ID相同的话会导致覆盖掉消息体的内容
         // 目前只能将KEY_ID这个字符串尽量设计的复杂一些，但实际上key都应该是有意义的字符串，如果真的一致了
         // 那...该买彩票了!
         message.putString(KEY_ID, id);
-        mTransferLayer.send(address,message);
+        mMockPhysicalLayer.send(address,message);
         CountDownLatch signal = new CountDownLatch(1);
         mSignalMap.put(id,signal);
         try {
@@ -69,7 +67,7 @@ public class TransportLayer implements ITransportLayer {
     @Override
     public void sendBroadcast(Bundle message) {
         // 直接发送，不需要考虑消息是否发送成功
-        mTransferLayer.send(null,message);
+        mMockPhysicalLayer.send(null,message);
     }
 
     /**
@@ -103,7 +101,7 @@ public class TransportLayer implements ITransportLayer {
         Bundle message = new Bundle();
         message.putString(KEY_ID,id);
         message.putString(KEY_BODY,BODY);
-        mTransferLayer.send(where,message);
+        mMockPhysicalLayer.send(where,message);
     }
 
     private boolean isAck(String where,Bundle message) {
@@ -112,7 +110,6 @@ public class TransportLayer implements ITransportLayer {
         if (BODY.equals(body)) {
             // 是一条ack的确认消息
             String id = message.getString(KEY_ID);
-            Log.d("main","receive id : " + id);
             if (!TextUtils.isEmpty(id) && id.startsWith(where)) {
                 CountDownLatch countDownLatch = mSignalMap.get(id);
                 if (countDownLatch != null) {

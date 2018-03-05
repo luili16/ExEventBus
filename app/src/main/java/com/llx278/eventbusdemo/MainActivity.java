@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.llx278.exeventbus.EventBusImpl;
 import com.llx278.exeventbus.Subscriber;
 import com.llx278.exeventbus.ThreadModel;
 
@@ -42,13 +41,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        EventBusImpl.getDefault().register(this);
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        EventBusImpl.getDefault().unRegister(this);
+
 
     }
 

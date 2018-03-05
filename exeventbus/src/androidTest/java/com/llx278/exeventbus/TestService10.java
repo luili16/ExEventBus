@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.llx278.exeventbus.entry.SubscribeEntry7;
+import com.llx278.exeventbus.remote.Address;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,28 +20,24 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Created by llx on 2018/3/4.
  */
 
-public class TestService9 extends Service {
+public class TestService10 extends Service {
 
-    private Router mRouter;
+    private ExEventBus mExEventBus;
 
     private IRouterInteractInterface.Stub mBinder = new IRouterInteractInterface.Stub() {
         @Override
         public Event[] getAddRegisterEventList(String address) throws RemoteException {
-            ConcurrentHashMap<String, CopyOnWriteArrayList<Event>> subScribeEventList = mRouter.getSubScribeEventList();
-            CopyOnWriteArrayList<Event> events = subScribeEventList.get(address);
-            if (events != null) {
-                return  events.toArray(new Event[0]);
-            }
             return null;
         }
 
         @Override
         public String getAddress() throws RemoteException {
-            return null;
+            return Address.createOwnAddress().toString();
         }
 
         @Override
         public void killSelf() throws RemoteException {
+            ExEventBus.destroy();
             Process.killProcess(Process.myPid());
         }
     };
@@ -54,13 +51,11 @@ public class TestService9 extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("main","testService9 onCreate");
-        EventBus eventBus = new EventBus();
-        mRouter = new Router(this,eventBus);
+        Log.d("main","testService10 onCreate");
+        ExEventBus.create(this);
+        mExEventBus = ExEventBus.getDefault();
         SubscribeEntry7 subscribeEntry7 = new SubscribeEntry7(null);
-        ArrayList<Event> addEventList = eventBus.register(subscribeEntry7);
-        mRouter.add(addEventList);
-
+        mExEventBus.register(subscribeEntry7);
     }
 
     @Override

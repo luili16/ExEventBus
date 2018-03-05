@@ -1,6 +1,7 @@
 package com.llx278.exeventbus;
 
 import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
@@ -9,6 +10,8 @@ import com.llx278.exeventbus.entry.SubscribeEntry2;
 import com.llx278.exeventbus.entry.SubscribeEntry3;
 import com.llx278.exeventbus.entry.SubscribeEntry4;
 import com.llx278.exeventbus.entry.SubscribeEntry6;
+import com.llx278.exeventbus.entry.SubscribeEntry7;
+import com.llx278.exeventbus.entry.SubscribeEntry9;
 import com.llx278.exeventbus.event.Event1;
 import com.llx278.exeventbus.event.Event3;
 import com.llx278.exeventbus.event.Event4;
@@ -35,13 +38,16 @@ import java.util.concurrent.TimeUnit;
 import static junit.framework.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
-public class EventBusImplTest {
+public class EventBusTest {
     
-    public EventBusImplTest() {
+    private EventBus mEventBus;
+    
+    public EventBusTest() {
     }
 
     @Before
     public void setUp() {
+        mEventBus = new EventBus();
     }
 
     @After
@@ -51,33 +57,33 @@ public class EventBusImplTest {
     @Test
     public void blockReturn() throws Exception {
         SubscribeEntry6 subscribeEntry6 = new SubscribeEntry6();
-        EventBusImpl.getDefault().register(subscribeEntry6);
+        mEventBus.register(subscribeEntry6);
 
         Event7 event7 = new Event7("event7");
-        Object returnValue = EventBusImpl.getDefault().publish(event7, "event7", String.class.getName());
+        Object returnValue = mEventBus.publish(event7, "event7", String.class.getName());
         assertNotNull(returnValue);
         assertEquals(String.class,returnValue.getClass());
         assertEquals("return_event7",returnValue);
 
         Event6 event6 = new Event6("event6");
-        Object returnValue1 = EventBusImpl.getDefault().publish(event6,"event6",String.class.getName());
+        Object returnValue1 = mEventBus.publish(event6,"event6",String.class.getName());
         assertNotNull(returnValue1);
         assertEquals(String.class,returnValue1.getClass());
         assertEquals("return_event6",returnValue1);
 
         Event5 event5 = new Event5("event5");
-        Object returnValue2 = EventBusImpl.getDefault().publish(event5,"event5",String.class.getName());
+        Object returnValue2 = mEventBus.publish(event5,"event5",String.class.getName());
         assertNotNull(returnValue2);
         assertEquals(String.class,returnValue1.getClass());
         assertEquals("return_event5",returnValue2);
 
         Event4 event4 = new Event4("event4");
-        Object returnValue3 = EventBusImpl.getDefault().publish(event4,"event4",String.class.getName());
+        Object returnValue3 = mEventBus.publish(event4,"event4",String.class.getName());
         assertNotNull(returnValue3);
         assertEquals(String.class,returnValue1.getClass());
         assertEquals("return_event4",returnValue3);
 
-        EventBusImpl.getDefault().unRegister(subscribeEntry6);
+        mEventBus.unRegister(subscribeEntry6);
 
         Map map = getSubscribeMap();
         assertEquals(0,map.size());
@@ -89,14 +95,14 @@ public class EventBusImplTest {
         final int N = 12;
         final CountDownLatch doneSignal = new CountDownLatch(N);
         SubscribeEntry1 subscribeEntry1 = new SubscribeEntry1(doneSignal);
-        subscribeEntry1.register();
+        mEventBus.register(subscribeEntry1);
         for (int i = 0; i < N; i++) {
             if (i < 9) {
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
                         Event1 event1 = new Event1("event1");
-                        EventBusImpl.getDefault().publish(event1, "event1");
+                        mEventBus.publish(event1, "event1");
                     }
                 });
             } else {
@@ -104,33 +110,33 @@ public class EventBusImplTest {
                     @Override
                     public void run() {
                         Event3 event3 = new Event3("event3");
-                        EventBusImpl.getDefault().publish(event3,"event3");
+                        mEventBus.publish(event3,"event3");
                     }
                 });
             }
         }
         doneSignal.await();
-        subscribeEntry1.unRegister();
+        mEventBus.unRegister(subscribeEntry1);
         executor.shutdown();
         executor.awaitTermination(5,TimeUnit.SECONDS);
         Log.d("main", "done");
     }
 
 
-    //模拟其他线程发送事件，此事件被多个订阅者所订阅，测试所有订阅了此事件的订阅者都应该接收到了事件。
+    //模拟其他线程发送事件，此事件被多个订阅者所订阅，所有订阅了此事件的订阅者都应该接收到了事件。
     @Test
     public void publicEventToSubscriber() throws Exception {
         final int n = 3;
         final CountDownLatch doneSignal = new CountDownLatch(n);
         SubscribeEntry1 subscribeEntry1 = new SubscribeEntry1(doneSignal);
         SubscribeEntry2 subscribeEntry2 = new SubscribeEntry2(doneSignal);
-        subscribeEntry1.register();
-        subscribeEntry2.register();
+        mEventBus.register(subscribeEntry1);
+        mEventBus.register(subscribeEntry2);
         Event3 event3 = new Event3("event3");
-        EventBusImpl.getDefault().publish(event3, "event3");
+        mEventBus.publish(event3, "event3");
         doneSignal.await();
-        subscribeEntry1.unRegister();
-        subscribeEntry2.unRegister();
+        mEventBus.unRegister(subscribeEntry1);
+        mEventBus.unRegister(subscribeEntry2);
     }
 
     @Test
@@ -138,43 +144,61 @@ public class EventBusImplTest {
 
         SubscribeEntry3 subscribeEntry3 = new SubscribeEntry3(null);
         SubscribeEntry4 subscribeEntry4 = new SubscribeEntry4(null);
-        List<Event> register3 = EventBusImpl.getDefault().register(subscribeEntry3);
+        List<Event> register3 = mEventBus.register(subscribeEntry3);
         assertEquals(2,register3.size());
-        List<Event> register4 = EventBusImpl.getDefault().register(subscribeEntry4);
+        List<Event> register4 = mEventBus.register(subscribeEntry4);
         assertEquals(2,register4.size());
 
         Map subscribeMap1 = getSubscribeMap();
         assertEquals(4, subscribeMap1.size());
-        List<Event> unregister3 = EventBusImpl.getDefault().unRegister(subscribeEntry3);
+        List<Event> unregister3 = mEventBus.unRegister(subscribeEntry3);
         assertEquals(1,unregister3.size());
         Map subscribeMap2 = getSubscribeMap();
         assertEquals(3, subscribeMap2.size());
-        List<Event> unregister4 = EventBusImpl.getDefault().unRegister(subscribeEntry4);
+        List<Event> unregister4 = mEventBus.unRegister(subscribeEntry4);
         assertEquals(3,unregister4.size());
         Map subscribeMap3 = getSubscribeMap();
         assertEquals(0, subscribeMap3.size());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void subscribeWithReturn() throws Exception {
+        SubscribeEntry9 subscribeEntry9 = new SubscribeEntry9(null);
+        mEventBus.register(subscribeEntry9);
+    }
+
     @Test
     public void repeatSubscribe() throws Exception {
         SubscribeEntry3 subscribeEntry3 = new SubscribeEntry3(null);
-        List<Event> register3 = EventBusImpl.getDefault().register(subscribeEntry3);
+        List<Event> register3 = mEventBus.register(subscribeEntry3);
         assertEquals(2,register3.size());
         Map subMap = getSubscribeMap();
         assertEquals(2, subMap.size());
-        List<Event> register31 = EventBusImpl.getDefault().register(subscribeEntry3);
+        List<Event> register31 = mEventBus.register(subscribeEntry3);
         assertEquals(0,register31.size());
         assertEquals(2, subMap.size());
-        EventBusImpl.getDefault().unRegister(subscribeEntry3);
+        mEventBus.unRegister(subscribeEntry3);
+    }
+
+    @Test
+    public void remoteSubscribe() throws Exception {
+        SubscribeEntry7 subscribeEntry7 = new SubscribeEntry7(null);
+        List<Event> register3 = mEventBus.register(subscribeEntry7);
+        assertEquals(4,register3.size());
+        assertEquals(true,register3.get(0).isRemote());
+        assertEquals(true,register3.get(1).isRemote());
+        assertEquals(true,register3.get(2).isRemote());
+        assertEquals(true,register3.get(3).isRemote());
+        mEventBus.unRegister(subscribeEntry7);
     }
 
     @Test
     public void query() {
         SubscribeEntry3 subscribeEntry3 = new SubscribeEntry3(null);
-        EventBusImpl.getDefault().register(subscribeEntry3);
-        List<Event> query = EventBusImpl.getDefault().query();
+        mEventBus.register(subscribeEntry3);
+        List<Event> query = mEventBus.query();
         assertEquals(2,query.size());
-        EventBusImpl.getDefault().unRegister(subscribeEntry3);
+        mEventBus.unRegister(subscribeEntry3);
     }
 
     @Test
@@ -192,7 +216,7 @@ public class EventBusImplTest {
                 @Override
                 public void run() {
                     try {
-                        EventBusImpl.getDefault().register(o);
+                        mEventBus.register(o);
                         done.countDown();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -203,7 +227,6 @@ public class EventBusImplTest {
         done.await();
 
         Map subMap = getSubscribeMap();
-        Log.d("main1","subMap.Size = " + subMap.size());
         assertEquals(6,subMap.size());
         for (final Object o : tempObj) {
             executor.execute(new Runnable() {
@@ -211,7 +234,7 @@ public class EventBusImplTest {
                 public void run() {
 
                     try {
-                        EventBusImpl.getDefault().unRegister(o);
+                        mEventBus.unRegister(o);
                         done1.countDown();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -251,7 +274,7 @@ public class EventBusImplTest {
                         executor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                EventBusImpl.getDefault().register(o);
+                                mEventBus.register(o);
                             }
                         });
 
@@ -279,7 +302,7 @@ public class EventBusImplTest {
                                 Random random = new Random(SystemClock.uptimeMillis());
                                 int i = random.nextInt(size);
                                 Object o = temp.get(i);
-                                EventBusImpl.getDefault().unRegister(o);
+                                mEventBus.unRegister(o);
                             }
                         });
                     } catch (Exception e) {
@@ -307,7 +330,7 @@ public class EventBusImplTest {
                         executor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                EventBusImpl.getDefault().publish(o, tag);
+                                mEventBus.publish(o, tag);
                             }
                         });
 
@@ -340,7 +363,7 @@ public class EventBusImplTest {
     }
 
     private Map getSubscribeMap() throws Exception {
-        EventBusImpl aDefault = EventBusImpl.getDefault();
+        EventBus aDefault = mEventBus;
         return aDefault.getDefaultMap();
     }
 }
