@@ -65,6 +65,16 @@ public class TestService9 extends Service {
         }
 
         @Override
+        public void start() throws RemoteException {
+
+        }
+
+        @Override
+        public void stop() throws RemoteException {
+
+        }
+
+        @Override
         public void sendTo(String addrss) throws RemoteException {
 
         }

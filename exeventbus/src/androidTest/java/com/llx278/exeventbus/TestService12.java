@@ -9,8 +9,15 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.llx278.exeventbus.entry.SubscribeEntry10;
+import com.llx278.exeventbus.event.BaseEvent;
+import com.llx278.exeventbus.event.Event10;
+import com.llx278.exeventbus.event.Event11;
 import com.llx278.exeventbus.event.Event8;
+import com.llx278.exeventbus.event.Event9;
 import com.llx278.exeventbus.remote.Address;
+
+import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  *
@@ -20,6 +27,7 @@ import com.llx278.exeventbus.remote.Address;
 public class TestService12 extends Service {
 
     private ExEventBus mExEventBus;
+    private ArrayList<Holder> mEventTemp = new ArrayList<>();
 
     private IRouterInteractInterface.Stub mBinder = new IRouterInteractInterface.Stub() {
         @Override
@@ -59,6 +67,16 @@ public class TestService12 extends Service {
         }
 
         @Override
+        public void start() throws RemoteException {
+
+        }
+
+        @Override
+        public void stop() throws RemoteException {
+
+        }
+
+        @Override
         public void sendTo(String addrss) throws RemoteException {
             Event8 event8 = new Event8("event8_fromTestService12");
             String tag = "event8_sendTo";
@@ -87,6 +105,39 @@ public class TestService12 extends Service {
                 mExEventBus.register(mSubscribeEntry10);
             }
         }.start();
+    }
+
+    private void addEventList() {
+
+        mEventTemp.add(new Holder(new Event8(UUID.randomUUID().toString()),"event8",void.class.getName()));
+
+        mEventTemp.add(new Holder(new Event9(UUID.randomUUID().toString()),"event9_SubscribeEntry8",String.class.getName()));
+        mEventTemp.add(new Holder(new Event10(UUID.randomUUID().toString()),"event10_SubscribeEntry8",String.class.getName()));
+        mEventTemp.add(new Holder(new Event11(UUID.randomUUID().toString()),"event11_SubscribeEntry8",String.class.getName()));
+
+        mEventTemp.add(new Holder(new Event9(),"event9_SubscribeEntry9",String.class.getName()));
+        mEventTemp.add(new Holder(new Event10(),"event10_SubscribeEntry9",String.class.getName()));
+        mEventTemp.add(new Holder(new Event11(),"event11_SubscribeEntry9",String.class.getName()));
+
+        /*mEventTemp.add(new Holder(new Event9(),"event9_SubscribeEntry10",String.class.getName()));
+        mEventTemp.add(new Holder(new Event10(),"event10_SubscribeEntry10",String.class.getName()));
+        mEventTemp.add(new Holder(new Event11(),"event11_SubscribeEntry10",String.class.getName()));*/
+
+        mEventTemp.add(new Holder(new Event9(),"event9_SubscribeEntry11",String.class.getName()));
+        mEventTemp.add(new Holder(new Event10(),"event10_SubscribeEntry11",String.class.getName()));
+        mEventTemp.add(new Holder(new Event11(),"event11_SubscribeEntry11",String.class.getName()));
+
+    }
+
+    private class Holder {
+        final BaseEvent event;
+        final String tag;
+        final String returnClassName;
+        Holder(BaseEvent event,String tag,String returnClassName) {
+            this.event =event;
+            this.tag = tag;
+            this.returnClassName = returnClassName;
+        }
     }
 
     @Override

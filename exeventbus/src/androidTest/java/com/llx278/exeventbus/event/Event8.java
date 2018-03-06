@@ -7,9 +7,10 @@ import android.os.Parcelable;
  * Created by llx on 2018/2/6.
  */
 
-public class Event8 implements Parcelable {
+public class Event8 extends BaseEvent implements Parcelable {
     private String msg;
 
+    public Event8(){}
     public Event8(String msg) {
         this.msg = msg;
     }
@@ -30,8 +31,19 @@ public class Event8 implements Parcelable {
         }
     };
 
+    @Override
+    public String toString() {
+        return msg;
+    }
+
+    @Override
     public String getMsg() {
         return msg;
+    }
+
+    @Override
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
     @Override

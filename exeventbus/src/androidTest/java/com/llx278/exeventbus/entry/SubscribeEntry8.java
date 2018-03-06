@@ -53,13 +53,13 @@ public class SubscribeEntry8 {
         return "return_" + event9.getMsg();
     }
 
-    @Subscriber(tag = "event10", model = ThreadModel.HANDLER, type = Type.BLOCK_RETURN, remote = true)
+    @Subscriber(tag = "event10_SubscribeEntry8", model = ThreadModel.HANDLER, type = Type.BLOCK_RETURN, remote = true)
     public String testMethod3(Event10 event10) {
         assertNotNull(event10);
         return "return_" + event10.getMsg();
     }
 
-    @Subscriber(tag = "event11", model = ThreadModel.POST, type = Type.BLOCK_RETURN, remote = true)
+    @Subscriber(tag = "event11_SubscribeEntry8", model = ThreadModel.POST, type = Type.BLOCK_RETURN, remote = true)
     public String testMethod4(Event11 event11) {
         assertNotNull(event11);
         return "return_" + event11.getMsg();

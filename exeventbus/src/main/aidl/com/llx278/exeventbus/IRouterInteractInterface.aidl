@@ -18,5 +18,9 @@ interface IRouterInteractInterface {
     String testMethod3Result();
     String testMethod4Result();
 
+    void start();
+
+    void stop();
+
     void sendTo(String addrss);
 }

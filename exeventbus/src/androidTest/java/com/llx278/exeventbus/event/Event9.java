@@ -3,12 +3,16 @@ package com.llx278.exeventbus.event;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.llx278.exeventbus.Event;
+
 /**
  * Created by llx on 2018/2/6.
  */
 
-public class Event9 implements Parcelable {
+public class Event9 extends BaseEvent implements Parcelable {
     private String msg;
+
+    public Event9(){}
 
     public Event9(String msg) {
         this.msg = msg;
@@ -30,8 +34,19 @@ public class Event9 implements Parcelable {
         }
     };
 
+    @Override
+    public String toString() {
+        return msg;
+    }
+
+    @Override
     public String getMsg() {
         return msg;
+    }
+
+    @Override
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
     @Override
