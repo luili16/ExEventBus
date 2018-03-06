@@ -1,6 +1,8 @@
 package com.llx278.exeventbus;
 
 import android.content.Context;
+import android.os.Looper;
+import android.util.Log;
 
 import com.llx278.exeventbus.exception.TimeoutException;
 
@@ -27,6 +29,7 @@ public class ExEventBus {
         if (sExEventBus != null) {
             throw new IllegalStateException("ExEventBus has been init!");
         }
+        checkThread();
         sExEventBus = new ExEventBus(context);
     }
 
@@ -34,6 +37,7 @@ public class ExEventBus {
      * ExEventBus应该在进程退出之前在合适的地方调用destroy()，这主要是为了解除广播的注册
      */
     public static void destroy() {
+        checkThread();
         if (sExEventBus != null) {
             sExEventBus.destroyInner();
             sExEventBus = null;
@@ -57,6 +61,7 @@ public class ExEventBus {
      * @param subscriber 待注册的subscriber
      */
     public void register(Object subscriber) {
+        checkThread();
         ArrayList<Event> newEventList = mEventBus.register(subscriber);
         mRouter.add(newEventList);
     }
@@ -67,6 +72,7 @@ public class ExEventBus {
      * @param subscriber 待取消的subscriber
      */
     public void unRegister(Object subscriber) {
+        checkThread();
         ArrayList<Event> removedEventList = mEventBus.unRegister(subscriber);
         mRouter.remove(removedEventList);
     }
@@ -99,6 +105,7 @@ public class ExEventBus {
     /**
      * 向其他进程的EventBus发布一个事件,eventObj和tag、returnCLassName以及remote组成了一个唯一标志
      * 此方法将事件发布到其他的进程
+     * 此方法允许在主线程上执行，因为目前底层使用的是广播实现进程间的通讯，主线程执行会阻塞。
      * @param eventObj        待执行的发布对象
      * @param tag             这个事件的标志
      * @param returnClassName 执行这个事件方法返回值得类的名字
@@ -107,6 +114,15 @@ public class ExEventBus {
      */
     public Object remotePublish(Object eventObj, String tag, String returnClassName,long timeout)
             throws TimeoutException {
+        checkThread();
         return mRouter.route(eventObj,tag,returnClassName,timeout);
+    }
+
+    private static void checkThread() {
+        Looper myLooper = Looper.myLooper();
+        Looper mainLooper = Looper.getMainLooper();
+        if (myLooper == mainLooper) {
+            throw new RuntimeException("Don't remote publish an Event in Main Thread!");
+        }
     }
 }

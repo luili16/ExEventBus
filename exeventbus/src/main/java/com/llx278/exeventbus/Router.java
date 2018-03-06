@@ -2,6 +2,7 @@ package com.llx278.exeventbus;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -157,7 +158,6 @@ public class Router implements Receiver {
      * 将此事件发送到其他的进程中执行
      * 注意，当一个事件被发布到多个进程中执行的时候，如果returnClassName是void.class.getName(),那么
      * 则只会只将此事件发送到其他的进程执行，直接返回。否则会等待，直到返回当前的执行后的结果。
-     *
      * @return 返回执行的结果，如果方法的返回值是void，则默认返回null，如果不是，则返回执行后的结果
      * @throws TimeoutException 超时
      */
@@ -167,7 +167,7 @@ public class Router implements Receiver {
         ArrayList<String> addressList = getAddressOf(event);
         // 先判断此事件是否已经被其他的进程注册了
         if (addressList.isEmpty()) {
-            Log.d("main","此事件还没有被其他进程注册!");
+            Log.d(TAG,"此事件还没有被其他进程注册!");
             return null;
         }
         if (returnClassName.equals(void.class.getName())) {
@@ -193,6 +193,8 @@ public class Router implements Receiver {
     }
 
     public void destroy() {
+        mExecutor.shutdown();
+        mExecutor = null;
         Bundle message = new Bundle();
         message.putString(KEY_TYPE, TYPE_VALUE_OF_DESTROY);
         mTransportLayer.sendBroadcast(message);
@@ -242,7 +244,6 @@ public class Router implements Receiver {
 
     public ArrayList<String> getAddressOf(Event event) {
         ArrayList<String> addressList = new ArrayList<>();
-        Log.d("main","当前进程里面 : " + mSubscribeEventList.toString());
         Set<Map.Entry<String, CopyOnWriteArrayList<Event>>> entries = mSubscribeEventList.entrySet();
         for (Map.Entry<String, CopyOnWriteArrayList<Event>> entry : entries) {
             CopyOnWriteArrayList<Event> eventValueList = entry.getValue();
@@ -261,16 +262,18 @@ public class Router implements Receiver {
 
     @Override
     public void onMessageReceive(final String where, final Bundle message) {
-        mExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                for (MessageObserver observer : mMessageObserverList) {
-                    if (observer.handleMessage(where, message)) {
-                        return;
+        if (mExecutor != null && !mExecutor.isShutdown()) {
+            mExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    for (MessageObserver observer : mMessageObserverList) {
+                        if (observer.handleMessage(where, message)) {
+                            return;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -373,7 +376,6 @@ public class Router implements Receiver {
         public boolean handleMessage(String where, Bundle message) {
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_QUERY.equals(typeValue)) {
-                Log.d("main", Address.createOwnAddress().toString() + ":接收到了一个从其他进程发送的query事件");
                 ArrayList<Event> allEvents = mEventBus.query();
                 Bundle valueMessage = new Bundle();
                 valueMessage.putString(KEY_ID, UUID.randomUUID().toString());
@@ -401,8 +403,6 @@ public class Router implements Receiver {
 
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_QUERY_RESULT.equals(typeValue)) {
-                Log.d("main", Address.createOwnAddress().toString() + ":接收到了一个从其他进程发送的query结果事件");
-
                 ArrayList<Event> queryEvents = message.getParcelableArrayList(KEY_QUERY_LIST);
                 if (queryEvents != null) {
                     mSubscribeEventList.put(where, new CopyOnWriteArrayList<>(queryEvents));
@@ -501,8 +501,8 @@ public class Router implements Receiver {
                         Logger.e(TAG, "send message[typeValue = " + typeValue + " rturnvalue = " +
                                 returnValue + "]", e);
                     }
-                    return true;
                 }
+                return true;
             }
             return false;
         }
@@ -543,7 +543,7 @@ public class Router implements Receiver {
         @Override
         public boolean handleMessage(String where, Bundle message) {
 
-            String typeValue = message.getString(KEY_TAG);
+            String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_DESTROY.equals(typeValue)) {
                 // 删除此进程的所有event事件
                 mSubscribeEventList.remove(where);

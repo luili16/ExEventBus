@@ -11,4 +11,12 @@ interface IRouterInteractInterface {
     String getAddress();
     // 退出当前的进程
     void killSelf();
+
+    // 获得远程注册对象执行的结果,用来判断是否执行了远程的方法
+    String testMethod1Result();
+    String testMethod2Result();
+    String testMethod3Result();
+    String testMethod4Result();
+
+    void sendTo(String addrss);
 }

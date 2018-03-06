@@ -25,6 +25,11 @@ public class SubscribeEntry9 {
 
     private final CountDownLatch mDownSignal;
 
+    public String mTestMethod1Tag;
+    public String mTestMethod2Tag;
+    public String mTestMethod3Tag;
+    public String mTestMethod4Tag;
+
     public SubscribeEntry9(CountDownLatch downSignal) {
         mDownSignal = downSignal;
     }
@@ -36,12 +41,13 @@ public class SubscribeEntry9 {
     public void testMethod1(Event8 event8) {
         assertNotNull(event8);
         Log.d("main","SubscribeEntry9 : " + event8.getMsg());
-        assertEquals("event8",event8.getMsg());
+        mTestMethod1Tag = event8.getMsg();
     }
 
-    @Subscriber(tag = "event9",model = ThreadModel.MAIN,type = Type.BLOCK_RETURN,remote = true)
+    @Subscriber(tag = "event9_SubscribeEntry9",model = ThreadModel.MAIN,type = Type.BLOCK_RETURN,remote = true)
     public String testMethod2(Event9 event9) {
         assertNotNull(event9);
+        Log.d("main","SubscribeEntry9 : " + event9.getMsg());
         return "return_" + event9.getMsg();
     }
 

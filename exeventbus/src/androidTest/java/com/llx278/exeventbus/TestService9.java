@@ -43,6 +43,31 @@ public class TestService9 extends Service {
         public void killSelf() throws RemoteException {
             Process.killProcess(Process.myPid());
         }
+
+        @Override
+        public String testMethod1Result() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public String testMethod2Result() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public String testMethod3Result() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public String testMethod4Result() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public void sendTo(String addrss) throws RemoteException {
+
+        }
     };
 
     @Nullable
@@ -55,16 +80,26 @@ public class TestService9 extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d("main","testService9 onCreate");
-        EventBus eventBus = new EventBus();
-        mRouter = new Router(this,eventBus);
-        SubscribeEntry7 subscribeEntry7 = new SubscribeEntry7(null);
-        ArrayList<Event> addEventList = eventBus.register(subscribeEntry7);
-        mRouter.add(addEventList);
-
+        new Thread(){
+            @Override
+            public void run() {
+                EventBus eventBus = new EventBus();
+                mRouter = new Router(TestService9.this,eventBus);
+                SubscribeEntry7 subscribeEntry7 = new SubscribeEntry7(null);
+                ArrayList<Event> addEventList = eventBus.register(subscribeEntry7);
+                mRouter.add(addEventList);
+            }
+        }.start();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        new Thread(){
+            @Override
+            public void run() {
+                mRouter.destroy();
+            }
+        }.start();
     }
 }

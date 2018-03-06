@@ -8,6 +8,7 @@ import com.llx278.exeventbus.exception.TimeoutException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,7 +28,6 @@ public class TransportLayer implements ITransportLayer {
     private final IMockPhysicalLayer mMockPhysicalLayer;
     private final ConcurrentHashMap<String,CountDownLatch> mSignalMap = new ConcurrentHashMap<>();
 
-
     private Receiver mListener;
 
     public TransportLayer(IMockPhysicalLayer transferLayer) {
@@ -45,7 +45,7 @@ public class TransportLayer implements ITransportLayer {
     }
 
     @Override
-    public void send(String address, Bundle message, long timeout) {
+    public void send(final String address, final Bundle message, final long timeout) {
         String id = address + "#" + UUID.randomUUID();
         // 对每一个待发送的消息添加一个id，这个id唯一的标识了一条消息
         // 最好的形式是将这个id作为message的消息头，但是这里用的bundle，无法做字符串的拼接

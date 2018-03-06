@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.llx278.exeventbus.entry.SubscribeEntry11;
 import com.llx278.exeventbus.entry.SubscribeEntry7;
+import com.llx278.exeventbus.event.Event8;
 import com.llx278.exeventbus.remote.Address;
 
 /**
@@ -34,9 +35,39 @@ public class TestService13 extends Service {
 
         @Override
         public void killSelf() throws RemoteException {
-            Process.killProcess(Process.myPid());
+            Log.d("main","TestService13 接收killself");
+            ExEventBus.destroy();
+        }
+
+        @Override
+        public String testMethod1Result() throws RemoteException {
+            return mSubscribeEntry11.mTestMethod1Tag;
+        }
+
+        @Override
+        public String testMethod2Result() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public String testMethod3Result() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public String testMethod4Result() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public void sendTo(String addrss) throws RemoteException {
+            Event8 event8 = new Event8("event8_fromTestService13");
+            String tag = "event8_sendTo";
+            String returnClassName = void.class.getName();
+            mExEventBus.remotePublish(event8,tag,returnClassName,1000 * 2);
         }
     };
+    private SubscribeEntry11 mSubscribeEntry11;
 
     @Nullable
     @Override
@@ -48,15 +79,21 @@ public class TestService13 extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d("main","testService13 onCreate");
-        ExEventBus.create(this);
-        mExEventBus = ExEventBus.getDefault();
-        SubscribeEntry11 subscribeEntry7 = new SubscribeEntry11(null);
-        mExEventBus.register(subscribeEntry7);
+        new Thread(){
+            @Override
+            public void run() {
+                ExEventBus.create(TestService13.this);
+                mExEventBus = ExEventBus.getDefault();
+                mSubscribeEntry11 = new SubscribeEntry11(null);
+                mExEventBus.register(mSubscribeEntry11);
+            }
+        }.start();
+
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ExEventBus.destroy();
+        Log.d("main","TestService13 : onDestroy");
     }
 }
