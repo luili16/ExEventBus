@@ -9,4 +9,6 @@ public abstract class BaseEvent {
     public abstract String getMsg();
     public abstract void setMsg(String msg);
 
+    public abstract BaseEvent deepCopy();
+
 }

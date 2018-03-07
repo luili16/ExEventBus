@@ -27,12 +27,16 @@ import com.llx278.exeventbus.remote.Address;
 import junit.framework.Assert;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -45,11 +49,12 @@ public class TestService10 extends Service {
     private SubscribeEntry8 mSubscribeEntry8;
     private ArrayList<Holder> mEventTemp = new ArrayList<>();
     private ExecutorService mExecutor;
-    private boolean mStart;
 
     private IRouterInteractInterface mService11;
     private IRouterInteractInterface mService12;
     private IRouterInteractInterface mService13;
+    private int mCount;
+    private final Object mWaitLock = new Object();
 
     private ConcurrentHashMap<String,String> mValueTemp = new ConcurrentHashMap<>();
     private static final String mTag = "TestService10_void_call_result";
@@ -127,14 +132,23 @@ public class TestService10 extends Service {
         }
 
         @Override
-        public void start() throws RemoteException {
-            mStart = true;
-            execute();
+        public void start(int count) throws RemoteException {
+            Log.d("main1","tsetService10Start");
+            mCount = count;
+            new Thread(){
+                @Override
+                public void run() {
+                    execute();
+                }
+            }.start();
         }
 
         @Override
-        public void stop() throws RemoteException {
-            mStart = false;
+        public boolean stop() throws RemoteException {
+            synchronized (mWaitLock) {
+                mWaitLock.notify();
+            }
+            return false;
         }
 
         @Override
@@ -148,28 +162,37 @@ public class TestService10 extends Service {
 
     private void execute() {
         final Random random = new Random(SystemClock.uptimeMillis());
-        while (mStart) {
+
+        for (int i = 0;i < mCount;i++) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             mExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     int i = random.nextInt(10);
                     if (i == 0) {
-                        Log.d("main",Address.createOwnAddress().toString() + ":发布没有返回值的事件");
                         Holder holder = mEventTemp.get(i);
-                        String msg = UUID.randomUUID().toString() + "#" + mTag;
-                        holder.event.setMsg(msg);
-                        mExEventBus.remotePublish(holder.event,holder.tag,holder.returnClassName,1000 * 2);
+                        Holder newHolder = holder.deepCopy();
+                        String body = UUID.randomUUID().toString();
+                        String uuid = UUID.randomUUID().toString();
+                        String msg = body + "#" + mTag + "#" + uuid;
+                        newHolder.event.setMsg(msg);
+                        mExEventBus.remotePublish(newHolder.event,newHolder.tag,newHolder.returnClassName,1000 * 2);
                         // 等待执行结果
                         boolean received = false;
                         long endTime = SystemClock.uptimeMillis() + 1000 * 2;
                         String value11 = null;
                         String value12 = null;
                         String value13 = null;
-                        while (SystemClock.uptimeMillis() < endTime) {
-                            try {
-                                value11 = mValueTemp.get(mService11.getAddress());
-                                value12 = mValueTemp.get(mService12.getAddress());
-                                value13 = mValueTemp.get(mService13.getAddress());
+                        try {
+                            while (SystemClock.uptimeMillis() < endTime) {
+
+                                value11 = mValueTemp.get(mService11.getAddress() + uuid);
+                                value12 = mValueTemp.get(mService12.getAddress() + uuid);
+                                value13 = mValueTemp.get(mService13.getAddress() + uuid);
 
                                 if (!TextUtils.isEmpty(value11) &&
                                         !TextUtils.isEmpty(value12) &&
@@ -177,21 +200,23 @@ public class TestService10 extends Service {
                                     received = true;
                                     break;
                                 }
-
-                            } catch (RemoteException e) {
-                                Log.e("main","",e);
                             }
+                            Assert.assertTrue(received);
+                            Assert.assertEquals(body,value11);
+                            Assert.assertEquals(body,value12);
+                            Assert.assertEquals(body,value13);
+                            mValueTemp.remove(mService11.getAddress());
+                            mValueTemp.remove(mService12.getAddress());
+                            mValueTemp.remove(mService13.getAddress());
+                        }catch (RemoteException e) {
+                            Log.e("main","",e);
                         }
-                        Assert.assertTrue(received);
-                        Assert.assertEquals(msg,value11);
-                        Assert.assertEquals(msg,value12);
-                        Assert.assertEquals(msg,value13);
                     } else {
-                        Log.d("main",Address.createOwnAddress().toString() + ":发布带有返回值的事件");
                         Holder holder = mEventTemp.get(i);
+                        Holder newHolder = holder.deepCopy();
                         String msg = UUID.randomUUID().toString();
-                        holder.event.setMsg(msg);
-                        Object o = mExEventBus.remotePublish(holder.event, holder.tag, holder.returnClassName, 1000 * 2);
+                        newHolder.event.setMsg(msg);
+                        Object o = mExEventBus.remotePublish(newHolder.event, newHolder.tag, newHolder.returnClassName, 1000 * 2);
                         Assert.assertNotNull(o);
                         Assert.assertEquals(o.getClass(),String.class);
                         Assert.assertEquals("return_" + msg,o.toString());
@@ -199,7 +224,19 @@ public class TestService10 extends Service {
                 }
             });
         }
-
+        Log.d("main","TestService10 关闭线程池！");
+        mExecutor.shutdown();
+        try {
+            mExecutor.awaitTermination(1, TimeUnit.HOURS);
+        } catch (InterruptedException ignore) {
+        }
+        synchronized (mWaitLock) {
+            try {
+                mWaitLock.wait();
+            } catch (InterruptedException ignore) {
+            }
+        }
+        Log.d("main1","TestService10 测试线程退出");
     }
 
     @Nullable
@@ -211,13 +248,17 @@ public class TestService10 extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("main","testService10 onCreate");
+        Log.d("main1","TestService10 onCreate");
 
         Intent service11Intent = new Intent(this,TestService11.class);
         bindService(service11Intent,mService11Connection, Context.BIND_AUTO_CREATE);
+        Intent service12Intent = new Intent(this,TestService12.class);
+        bindService(service12Intent,mService12Connection,Context.BIND_AUTO_CREATE);
+        Intent service13Intent = new Intent(this,TestService13.class);
+        bindService(service13Intent,mService13Connection,Context.BIND_AUTO_CREATE);
 
         addEventList();
-        mExecutor = Executors.newCachedThreadPool();
+        mExecutor = Executors.newFixedThreadPool(50);
         new Thread(){
             @Override
             public void run() {
@@ -236,13 +277,13 @@ public class TestService10 extends Service {
         String msg = event8.getMsg();
         String split[] = msg.split("#");
         String uuid = split[0];
-        String address = split[1];
-        mValueTemp.put(address,uuid);
+        String addressAndUuid = split[1];
+        mValueTemp.put(addressAndUuid,uuid);
     }
 
     private void addEventList() {
 
-        mEventTemp.add(new Holder(new Event8(UUID.randomUUID().toString()),"event8",void.class.getName()));
+        mEventTemp.add(new Holder(new Event8(),"event8",void.class.getName()));
 
         /*mEventTemp.add(new Holder(new Event9(UUID.randomUUID().toString()),"event9_SubscribeEntry8",String.class.getName()));
         mEventTemp.add(new Holder(new Event10(UUID.randomUUID().toString()),"event10_SubscribeEntry8",String.class.getName()));
@@ -276,6 +317,10 @@ public class TestService10 extends Service {
             this.event =event;
             this.tag = tag;
             this.returnClassName = returnClassName;
+        }
+
+        public Holder deepCopy() {
+            return new Holder(event.deepCopy(),tag,returnClassName);
         }
     }
 }

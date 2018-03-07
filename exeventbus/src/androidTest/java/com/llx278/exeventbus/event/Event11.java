@@ -47,6 +47,11 @@ public class Event11 extends BaseEvent implements Parcelable {
     }
 
     @Override
+    public BaseEvent deepCopy() {
+        return new Event11(this.msg);
+    }
+
+    @Override
     public int describeContents() {
         return 0;
     }

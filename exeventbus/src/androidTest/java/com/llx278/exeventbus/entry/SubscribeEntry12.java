@@ -3,6 +3,7 @@ package com.llx278.exeventbus.entry;
 
 import android.util.Log;
 
+import com.llx278.exeventbus.ExEventBus;
 import com.llx278.exeventbus.Subscriber;
 import com.llx278.exeventbus.ThreadModel;
 import com.llx278.exeventbus.Type;
@@ -10,6 +11,7 @@ import com.llx278.exeventbus.event.Event10;
 import com.llx278.exeventbus.event.Event11;
 import com.llx278.exeventbus.event.Event8;
 import com.llx278.exeventbus.event.Event9;
+import com.llx278.exeventbus.remote.Address;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -38,14 +40,23 @@ public class SubscribeEntry12 {
     @Subscriber(tag = "event8_sendTo",model = ThreadModel.POOL,type = Type.DEFAULT,remote = true)
     public void testMethod1(Event8 event8) {
         assertNotNull(event8);
-        Log.d("main","SubscribeEntry12 : " + event8.getMsg());
         mTestMethod1Tag = event8.getMsg();
+        String splite[] = event8.getMsg().split("#");
+        String body = splite[0];
+        String tag = splite[1];
+        String uuid = splite[2];
+
+        Event8 returnEvent = new Event8();
+        String returnClassName = void.class.getName();
+        String address = Address.createOwnAddress().toString();
+        String msg = body + "#" + address+uuid;
+        returnEvent.setMsg(msg);
+        ExEventBus.getDefault().remotePublish(returnEvent,tag,returnClassName,1000 * 2);
     }
 
     @Subscriber(tag = "event9_SubscribeEntry12",model = ThreadModel.MAIN,type = Type.BLOCK_RETURN,remote = true)
     public String testMethod2(Event9 event9) {
         assertNotNull(event9);
-        Log.d("main","SubscribeEntry12 : " + event9.getMsg());
         return "return_" + event9.getMsg();
     }
 

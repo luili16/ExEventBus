@@ -42,16 +42,16 @@ public class SubscribeEntry9 {
     @Subscriber(tag = "event8",model = ThreadModel.POOL,type = Type.DEFAULT,remote = true)
     public void testMethod1(Event8 event8) {
         assertNotNull(event8);
-        Log.d("main","SubscribeEntry9 : " + event8.getMsg());
         mTestMethod1Tag = event8.getMsg();
         String splite[] = event8.getMsg().split("#");
-        String uuid = splite[0];
+        String body = splite[0];
+        String tag = splite[1];
+        String uuid = splite[2];
 
         Event8 returnEvent = new Event8();
-        String tag = splite[1];
         String returnClassName = void.class.getName();
         String address = Address.createOwnAddress().toString();
-        String msg = uuid + "#" + address;
+        String msg = body + "#" + address + uuid;
         returnEvent.setMsg(msg);
         ExEventBus.getDefault().remotePublish(returnEvent,tag,returnClassName,1000 * 2);
     }
@@ -59,7 +59,6 @@ public class SubscribeEntry9 {
     @Subscriber(tag = "event9_SubscribeEntry9",model = ThreadModel.MAIN,type = Type.BLOCK_RETURN,remote = true)
     public String testMethod2(Event9 event9) {
         assertNotNull(event9);
-        Log.d("main","SubscribeEntry9 : " + event9.getMsg());
         return "return_" + event9.getMsg();
     }
 

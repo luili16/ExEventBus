@@ -1,11 +1,16 @@
 package com.llx278.exeventbus;
 
 import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.llx278.exeventbus.entry.SubscribeEntry11;
@@ -17,8 +22,15 @@ import com.llx278.exeventbus.event.Event8;
 import com.llx278.exeventbus.event.Event9;
 import com.llx278.exeventbus.remote.Address;
 
+import junit.framework.Assert;
+
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -28,8 +40,54 @@ import java.util.UUID;
 public class TestService13 extends Service {
 
     private ExEventBus mExEventBus;
-
+    private SubscribeEntry11 mSubscribeEntry11;
     private ArrayList<Holder> mEventTemp = new ArrayList<>();
+    private ExecutorService mExecutor;
+    private boolean mStart;
+
+    private IRouterInteractInterface mService10;
+    private IRouterInteractInterface mService11;
+    private IRouterInteractInterface mService12;
+    private int mCount;
+    private final Object mWaitLock = new Object();
+
+    private ConcurrentHashMap<String,String> mValueTemp = new ConcurrentHashMap<>();
+    private static final String mTag = "TestService13_void_call_result";
+
+    private ServiceConnection mService10Connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mService10 = IRouterInteractInterface.Stub.asInterface(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d("main","mService10 onServiceDisconnected");
+        }
+    };
+    private ServiceConnection mService11Connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mService11 = IRouterInteractInterface.Stub.asInterface(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d("main","mService11 onServiceDisconnected");
+        }
+    };
+    private ServiceConnection mService12Connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mService12 = IRouterInteractInterface.Stub.asInterface(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d("main","mService12 onServiceDisconnected");
+        }
+    };
+
 
     private IRouterInteractInterface.Stub mBinder = new IRouterInteractInterface.Stub() {
         @Override
@@ -69,13 +127,23 @@ public class TestService13 extends Service {
         }
 
         @Override
-        public void start() throws RemoteException {
-
+        public void start(int count) throws RemoteException {
+            Log.d("main1","tsetService13Start");
+            mCount = count;
+            new Thread(){
+                @Override
+                public void run() {
+                    execute();
+                }
+            }.start();
         }
 
         @Override
-        public void stop() throws RemoteException {
-
+        public boolean stop() throws RemoteException {
+            synchronized (mWaitLock) {
+                mWaitLock.notify();
+            }
+            return false;
         }
 
         @Override
@@ -86,7 +154,86 @@ public class TestService13 extends Service {
             mExEventBus.remotePublish(event8,tag,returnClassName,1000 * 2);
         }
     };
-    private SubscribeEntry11 mSubscribeEntry11;
+
+    private void execute() {
+        final Random random = new Random(SystemClock.uptimeMillis());
+
+        for (int i = 0;i < mCount;i++) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            mExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    int i = random.nextInt(10);
+                    if (i == 0) {
+                        Holder holder = mEventTemp.get(i);
+                        Holder newHolder = holder.deepCopy();
+                        String body = UUID.randomUUID().toString();
+                        String uuid = UUID.randomUUID().toString();
+                        String msg = body + "#" + mTag + "#" + uuid;
+                        newHolder.event.setMsg(msg);
+                        mExEventBus.remotePublish(newHolder.event,newHolder.tag,newHolder.returnClassName,1000 * 2);
+                        // 等待执行结果
+                        boolean received = false;
+                        long endTime = SystemClock.uptimeMillis() + 1000 * 2;
+                        String value10 = null;
+                        String value11 = null;
+                        String value12 = null;
+                        try {
+                            while (SystemClock.uptimeMillis() < endTime) {
+
+                                value10 = mValueTemp.get(mService10.getAddress() + uuid);
+                                value11 = mValueTemp.get(mService11.getAddress() + uuid);
+                                value12 = mValueTemp.get(mService12.getAddress() + uuid);
+
+                                if (!TextUtils.isEmpty(value10) &&
+                                        !TextUtils.isEmpty(value11) &&
+                                        !TextUtils.isEmpty(value12)) {
+                                    received = true;
+                                    break;
+                                }
+                            }
+                            Assert.assertTrue(received);
+                            Assert.assertEquals(body,value10);
+                            Assert.assertEquals(body,value11);
+                            Assert.assertEquals(body,value12);
+                            mValueTemp.remove(mService10.getAddress());
+                            mValueTemp.remove(mService11.getAddress());
+                            mValueTemp.remove(mService12.getAddress());
+                        }catch (RemoteException e) {
+                            Log.e("main","",e);
+                        }
+                    } else {
+                        Holder holder = mEventTemp.get(i);
+                        Holder newHolder = holder.deepCopy();
+                        String msg = UUID.randomUUID().toString();
+                        newHolder.event.setMsg(msg);
+                        Object o = mExEventBus.remotePublish(newHolder.event, newHolder.tag, newHolder.returnClassName, 1000 * 2);
+                        Assert.assertNotNull(o);
+                        Assert.assertEquals(o.getClass(),String.class);
+                        Assert.assertEquals("return_" + msg,o.toString());
+                    }
+                }
+            });
+        }
+        Log.d("main","TestService13 关闭线程池！");
+        mExecutor.shutdown();
+        try {
+            mExecutor.awaitTermination(1, TimeUnit.HOURS);
+        } catch (InterruptedException ignore) {
+        }
+        synchronized (mWaitLock) {
+            try {
+                mWaitLock.wait();
+            } catch (InterruptedException ignore) {
+            }
+        }
+        Log.d("main1","TestService13 测试线程退出");
+    }
+
 
     @Nullable
     @Override
@@ -97,8 +244,16 @@ public class TestService13 extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("main","testService13 onCreate");
+        Log.d("main1","testService13 onCreate");
+        Intent service10Intent = new Intent(this,TestService10.class);
+        bindService(service10Intent,mService10Connection, Context.BIND_AUTO_CREATE);
+        Intent service11Intent = new Intent(this,TestService11.class);
+        bindService(service11Intent,mService11Connection,Context.BIND_AUTO_CREATE);
+        Intent service12Intent = new Intent(this,TestService12.class);
+        bindService(service12Intent,mService12Connection,Context.BIND_AUTO_CREATE);
+
         addEventList();
+        mExecutor = Executors.newCachedThreadPool();
         new Thread(){
             @Override
             public void run() {
@@ -106,9 +261,19 @@ public class TestService13 extends Service {
                 mExEventBus = ExEventBus.getDefault();
                 mSubscribeEntry11 = new SubscribeEntry11(null);
                 mExEventBus.register(mSubscribeEntry11);
+                mExEventBus.register(TestService13.this);
             }
         }.start();
 
+    }
+
+    @Subscriber(tag = mTag,type = Type.DEFAULT,model = ThreadModel.POOL,remote = true)
+    public void waitCallResult(Event8 event8) {
+        String msg = event8.getMsg();
+        String split[] = msg.split("#");
+        String uuid = split[0];
+        String address = split[1];
+        mValueTemp.put(address,uuid);
     }
 
     private void addEventList() {
@@ -141,6 +306,9 @@ public class TestService13 extends Service {
             this.event =event;
             this.tag = tag;
             this.returnClassName = returnClassName;
+        }
+        public Holder deepCopy() {
+            return new Holder(event.deepCopy(),tag,returnClassName);
         }
     }
 

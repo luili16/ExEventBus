@@ -19,4 +19,9 @@ public class Event4 extends BaseEvent {
     public void setMsg(String msg) {
         this.msg = msg;
     }
+
+    @Override
+    public BaseEvent deepCopy() {
+        return null;
+    }
 }

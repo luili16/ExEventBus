@@ -187,7 +187,7 @@ public class Router implements Receiver {
      * 将事件发送到指定进程执行
      * @return 返回执行的结果，如果方法的返回值是void，则默认返回null，如果不是，则返回执行后的结果
      */
-    Object route(String address,Object eventObject, String tag, String returnClassName, long timeout) {
+    private Object route(String address,Object eventObject, String tag, String returnClassName, long timeout) {
         PublishHandler publishHandler = new PublishHandler(address);
         return publishHandler.publishToRemote(eventObject,tag,returnClassName,timeout);
     }
@@ -299,20 +299,16 @@ public class Router implements Receiver {
         /**
          * 这个事件的唯一标识
          */
-        private String mId;
+        private final String mId;
 
         /**
          * 返回的结果
          */
         private Object mResult;
-        /**
-         * true 正确的获得了结果 false 没有获得
-         */
-        private boolean mHasResult;
 
-        private CountDownLatch mDoneSignal;
+        private final CountDownLatch mDoneSignal;
 
-        private String mAddress;
+        private final String mAddress;
 
         PublishHandler(String address) {
             mId = UUID.randomUUID().toString();
@@ -350,17 +346,18 @@ public class Router implements Receiver {
                 long endTime = SystemClock.uptimeMillis();
                 long elapsedTime = endTime - currentTime;
                 long leftTimeout = timeout - elapsedTime;
-                mHasResult = false;
+                //mHasResult = false;
                 try {
                     if (!mDoneSignal.await(leftTimeout, TimeUnit.MILLISECONDS)) {
                         // 等待超时
                         throw new TimeoutException("wait publish result timeout!");
                     }
                 } catch (InterruptedException ignore) {
+                    Log.e("main","",ignore);
                 }
-                if (mHasResult) {
-                    return mResult;
-                }
+                // 删除已经执行结束的事件
+                mWaitingExecuteReturnValueMap.remove(mId);
+                return mResult;
             }
             return null;
         }
@@ -523,10 +520,7 @@ public class Router implements Receiver {
                     PublishHandler mWaitingPublishHandler = mWaitingExecuteReturnValueMap.get(id);
                     if (mWaitingPublishHandler != null) {
                         mWaitingPublishHandler.mResult = returnValue;
-                        mWaitingPublishHandler.mHasResult = true;
                         mWaitingPublishHandler.mDoneSignal.countDown();
-                        // 删除已经执行结束的事件
-                        mWaitingExecuteReturnValueMap.remove(id);
                         return true;
                     }
                 }

@@ -65,13 +65,13 @@ public class TestService9 extends Service {
         }
 
         @Override
-        public void start() throws RemoteException {
+        public void start(int count) throws RemoteException {
 
         }
 
         @Override
-        public void stop() throws RemoteException {
-
+        public boolean stop() throws RemoteException {
+            return false;
         }
 
         @Override
