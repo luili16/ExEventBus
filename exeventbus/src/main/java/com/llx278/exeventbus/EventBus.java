@@ -2,17 +2,17 @@ package com.llx278.exeventbus;
 
 import android.os.Parcelable;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.llx278.exeventbus.exception.IllegalRemoteArgumentException;
-import com.llx278.exeventbus.exception.IllegalSubscribeException;
 import com.llx278.exeventbus.execute.Executor;
 import com.llx278.exeventbus.execute.ExecutorFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +29,10 @@ class EventBus {
      * 已经订阅的事件
      */
     private final Map<Event, CopyOnWriteArrayList<Subscription>> mSubscribedMap = new ConcurrentHashMap<>();
+    /**
+     * 缓存本地的粘滞事件
+     */
+    private final ArrayList<StickyHolder> mStickyEventList = new ArrayList<>();
 
 
     EventBus() {
@@ -40,7 +44,7 @@ class EventBus {
      * @param subscriber 待注册的subscriber
      * @return 返回此次注册的subscriber所生成的订阅事件列表
      * @throws IllegalStateException 当订阅的方法的返回值不为空的时候，每一个订阅的消息只允许有一个可以执行的方法，
-     *         并且Type固定为BLOCK_RETURN。不符合此限制则会抛出IllegalStateException
+     *                               并且Type固定为BLOCK_RETURN。不符合此限制则会抛出IllegalStateException
      */
     public ArrayList<Event> register(Object subscriber) throws IllegalStateException {
         if (subscriber == null) {
@@ -82,11 +86,33 @@ class EventBus {
                         }
                         mSubscribedMap.put(newEvent, subscriptionList);
                     }
+
                 }
             }
             aClass = aClass.getSuperclass();
         }
+        checkStickyEvent();
         return newAddedList;
+    }
+
+    private void checkStickyEvent() {
+        Set<Event> events = mSubscribedMap.keySet();
+        // 判断一下本地粘滞事件
+        synchronized (mStickyEventList) {
+            for (Event event : events) {
+                Iterator<StickyHolder> iterator = mStickyEventList.iterator();
+                while (iterator.hasNext()) {
+                    StickyHolder next = iterator.next();
+                    if (next.mEvent.equals(event)) {
+                        // 这里订阅事件的线程模型如果是在发布线程执行的话，那就会导致
+                        // 这里发生阻塞
+                        publish(next.mEvent, next.mEventObj);
+                        // 移除已经发布完成的粘滞事件
+                        iterator.remove();
+                    }
+                }
+            }
+        }
     }
 
     private void checkRemoteParam(Class<?> paramType, Class<?> returnType) {
@@ -175,7 +201,7 @@ class EventBus {
      */
     public void publish(Object eventObj, String tag) {
         if (eventObj == null || TextUtils.isEmpty(tag)) {
-            Logger.e("LocalEventBus.publish(Object,String) param Object or tag is null!!", null);
+            ELogger.e("LocalEventBus.publish(Object,String) param Object or tag is null!!", null);
             return;
         }
         publish(eventObj, tag, void.class.getName());
@@ -198,12 +224,16 @@ class EventBus {
 
     Object publish(Object eventObj, String tag, String returnClassName, boolean isRemote) {
         if (eventObj == null || TextUtils.isEmpty(tag) || TextUtils.isEmpty(returnClassName)) {
-            Logger.e("LocalEventBus.publish(Object,String,Class) param Object or tag or " +
+            ELogger.e("LocalEventBus.publish(Object,String,Class) param Object or tag or " +
                     "class is null!!", null);
             return null;
         }
 
         Event event = new Event(tag, eventObj.getClass().getName(), returnClassName, isRemote);
+        return publish(event, eventObj);
+    }
+
+    private Object publish(Event event, Object eventObj) {
         CopyOnWriteArrayList<Subscription> subscriptionList = mSubscribedMap.get(event);
         if (subscriptionList != null) {
             for (Subscription subs : subscriptionList) {
@@ -211,7 +241,7 @@ class EventBus {
                 Object subscribe = subs.mSubscribeRef.get();
                 if (subscribe != null) {
                     if (subs.mType == Type.BLOCK_RETURN) {
-                        // 因为返回值只能有一个,所以默认只是第一个注册的有效!!
+                        // 因为返回值只能有一个,所以默认只是第一个注册的有效
                         return executor.submit(subs.mMethod, eventObj, subscribe);
                     } else if (subs.mType == Type.DEFAULT) {
                         executor.execute(subs.mMethod, eventObj, subscribe);
@@ -220,6 +250,34 @@ class EventBus {
             }
         }
         return null;
+    }
+
+    /**
+     * 向EventBus上面发布一个粘滞事件，粘滞事件不支持返回值
+     * 注意：不要尝试粘滞发布一个Type为:{@link Type#BLOCK_RETURN}事件，因为当对应事件在总线上注册之后会
+     * 立即执行，如果TYpe为{@link Type#BLOCK_RETURN}的话会阻塞注册的过程，如果注册的过程是在主线程执行的话
+     * 那么可能会引起页面无响应.
+     * @param eventObj 待执行的发布对象
+     * @param tag      这个事件的标志
+     */
+    public void stickyPublish(Object eventObj, String tag) {
+        if (eventObj == null || TextUtils.isEmpty(tag)) {
+            ELogger.e("LocalEventBus.publish(Object,String,Class) param Object or tag or " +
+                    "class is null!!", null);
+            return;
+        }
+        String returnClassName = void.class.getName();
+        Event event = new Event(tag, eventObj.getClass().getName(), returnClassName, false);
+        CopyOnWriteArrayList<Subscription> subscriptionList = mSubscribedMap.get(event);
+        if (subscriptionList != null) {
+            // 此事件已经被注册了，可以直接发送
+            publish(event, eventObj);
+            return;
+        }
+        synchronized (mStickyEventList) {
+            ELogger.d("保存stickyEventList");
+            mStickyEventList.add(new StickyHolder(event, eventObj));
+        }
     }
 
     /**
@@ -256,5 +314,15 @@ class EventBus {
 
     private boolean isSystemClass(String name) {
         return name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("android.");
+    }
+
+    class StickyHolder {
+        final Event mEvent;
+        final Object mEventObj;
+
+        StickyHolder(Event event, Object eventObj) {
+            mEvent = event;
+            mEventObj = eventObj;
+        }
     }
 }

@@ -3,7 +3,7 @@ package com.llx278.exeventbus.remote;
 import android.os.Process;
 import android.text.TextUtils;
 
-import com.llx278.exeventbus.Logger;
+import com.llx278.exeventbus.ELogger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +34,7 @@ public class Address {
         try {
             jsonObject.put(PID,mPid);
         } catch (JSONException e) {
-            Logger.e("",e);
+            ELogger.e("",e);
         }
         return jsonObject.toString();
     }
@@ -59,7 +59,7 @@ public class Address {
             int pid = jsonObject.getInt(PID);
             addressObj = new Address(pid);
         } catch (JSONException e) {
-            Logger.e("",e);
+            ELogger.e("",e);
         }
         return addressObj;
     }

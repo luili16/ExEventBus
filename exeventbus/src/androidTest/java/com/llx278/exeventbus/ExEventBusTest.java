@@ -195,7 +195,10 @@ public class ExEventBusTest {
      */
     @Test
     public void publishToOtherProcess() throws Exception {
-        Event8 event8 = new Event8("event8");
+        String body = UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString();
+        String msg = body + "#" + M_TAG + "#" + uuid;
+        Event8 event8 = new Event8(msg);
         String tag = "event8";
         sExEventBus.remotePublish(event8,tag,void.class.getName(),1000 * 2);
 
@@ -219,17 +222,17 @@ public class ExEventBusTest {
                 break;
             }
         }
-        assertEquals("event8",result10);
-        assertEquals("event8",result11);
-        assertEquals("event8",result12);
-        assertEquals("event8",result13);
+        assertEquals(msg,result10);
+        assertEquals(msg,result11);
+        assertEquals(msg,result12);
+        assertEquals(msg,result13);
     }
 
     /**
      * 测试发布一个需要返回值的消息到其他进程
      */
     @Test
-    public void publishToOtherProcessAndWaitReturn() {
+    public void publishToOtherProcessAndWaitReturn() throws Exception {
         Event9 event9 = new Event9("event9_SubscribeEntry8");
         String tag = "event9_SubscribeEntry8";
         // 分别发送消息给其他4个进程
@@ -265,41 +268,35 @@ public class ExEventBusTest {
     }
 
     /**
-     * 测试其他的进程发布一个消息到此进程
+     * 测试进程之间的粘滞事件
      */
     @Test
-    public void otherProcessPublishToHere() throws Exception {
+    public void stickyPublishEvent() throws Exception {
 
-        sSubscribeEntry12.mTestMethod1Tag = null;
-        sTest10.sendTo(Address.createOwnAddress().toString());
-        waitNotEmpty();
-        assertEquals("event8_fromTestService10", sSubscribeEntry12.mTestMethod1Tag);
-
-
-        sSubscribeEntry12.mTestMethod1Tag = null;
-        sTest11.sendTo(Address.createOwnAddress().toString());
-        waitNotEmpty();
-        assertEquals("event8_fromTestService11", sSubscribeEntry12.mTestMethod1Tag);
-
-        sSubscribeEntry12.mTestMethod1Tag = null;
-        sTest12.sendTo(Address.createOwnAddress().toString());
-        waitNotEmpty();
-        assertEquals("event8_fromTestService12", sSubscribeEntry12.mTestMethod1Tag);
-
-        sSubscribeEntry12.mTestMethod1Tag = null;
-        sTest13.sendTo(Address.createOwnAddress().toString());
-        waitNotEmpty();
-        assertEquals("event8_fromTestService13", sSubscribeEntry12.mTestMethod1Tag);
-    }
-
-    private void waitNotEmpty() throws Exception {
-        long endTIme = SystemClock.uptimeMillis() + sDefaultTimeout;
-        while (SystemClock.uptimeMillis() < endTIme) {
-            Thread.sleep(50);
-            if (!TextUtils.isEmpty(sSubscribeEntry12.mTestMethod1Tag)) {
+        String msg = "event8_sticky_return";
+        Event8 event8 = new Event8(msg);
+        String tag = "event8_sticky";
+        // 先发送一个粘滞事件
+        sExEventBus.stickyRemotePublish(event8,tag,2000);
+        Thread.sleep(3000);
+        // 启动TestService14
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent service14Intent = new Intent(context,TestService14.class);
+        IBinder binder = sServiceRule.bindService(service14Intent);
+        IRouterInteractInterface test14 = IRouterInteractInterface.Stub.asInterface(binder);
+        // 启动进程以后就应该执行了注册的方法
+        long endtime = SystemClock.uptimeMillis() + 1000 * 5;
+        boolean found = false;
+        while (SystemClock.uptimeMillis() < endtime) {
+            String s = test14.testMethod1Result();
+            if (!TextUtils.isEmpty(s)) {
+                found = true;
                 break;
             }
         }
+        assertTrue(found);
+        assertEquals(msg,test14.testMethod1Result());
+        test14.stop();
     }
 
     /**
@@ -310,7 +307,7 @@ public class ExEventBusTest {
 
         sExEventBus.register(this);
 
-        int count = 10000;
+        int count = 1000;
 
         sTest10.start(count);
         sTest11.start(count);
@@ -328,8 +325,8 @@ public class ExEventBusTest {
                 String body = UUID.randomUUID().toString();
                 String uuid = UUID.randomUUID().toString();
                 String msg = body + "#" + M_TAG + "#" + uuid;
-                holder.event.setMsg(msg);
-                sExEventBus.remotePublish(holder.event,holder.tag,holder.returnClassName,1000 * 2);
+                newHolder.event.setMsg(msg);
+                sExEventBus.remotePublish(newHolder.event,newHolder.tag,newHolder.returnClassName,1000 * 2);
                 boolean received = false;
                 long endTimeReturn = SystemClock.uptimeMillis() + 1000 * 2;
                 String value10 = null;

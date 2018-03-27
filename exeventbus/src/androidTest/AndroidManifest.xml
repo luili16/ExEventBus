@@ -50,6 +50,9 @@
             android:name=".TestService13"
             android:process=":remote13"
             />
+        <service android:name=".TestService14"
+            android:process=":remote14"
+            />
 
     </application>
 

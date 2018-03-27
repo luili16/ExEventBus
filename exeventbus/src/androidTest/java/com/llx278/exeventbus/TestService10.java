@@ -22,6 +22,7 @@ import com.llx278.exeventbus.event.Event10;
 import com.llx278.exeventbus.event.Event11;
 import com.llx278.exeventbus.event.Event8;
 import com.llx278.exeventbus.event.Event9;
+import com.llx278.exeventbus.exception.TimeoutException;
 import com.llx278.exeventbus.remote.Address;
 
 import junit.framework.Assert;
@@ -156,7 +157,11 @@ public class TestService10 extends Service {
             Event8 event8 = new Event8("event8_fromTestService10");
             String tag = "event8_sendTo";
             String returnClassName = void.class.getName();
-            mExEventBus.remotePublish(event8,tag,returnClassName,1000 * 2);
+            try {
+                mExEventBus.remotePublish(event8,tag,returnClassName,1000 * 2);
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
         }
     };
 
@@ -180,7 +185,11 @@ public class TestService10 extends Service {
                         String uuid = UUID.randomUUID().toString();
                         String msg = body + "#" + mTag + "#" + uuid;
                         newHolder.event.setMsg(msg);
-                        mExEventBus.remotePublish(newHolder.event,newHolder.tag,newHolder.returnClassName,1000 * 2);
+                        try {
+                            mExEventBus.remotePublish(newHolder.event,newHolder.tag,newHolder.returnClassName,1000 * 2);
+                        } catch (TimeoutException e) {
+                            throw new RuntimeException(e);
+                        }
                         // 等待执行结果
                         boolean received = false;
                         long endTime = SystemClock.uptimeMillis() + 1000 * 2;
@@ -216,7 +225,12 @@ public class TestService10 extends Service {
                         Holder newHolder = holder.deepCopy();
                         String msg = UUID.randomUUID().toString();
                         newHolder.event.setMsg(msg);
-                        Object o = mExEventBus.remotePublish(newHolder.event, newHolder.tag, newHolder.returnClassName, 1000 * 2);
+                        Object o = null;
+                        try {
+                            o = mExEventBus.remotePublish(newHolder.event, newHolder.tag, newHolder.returnClassName, 1000 * 2);
+                        } catch (TimeoutException e) {
+                            throw new RuntimeException(e);
+                        }
                         Assert.assertNotNull(o);
                         Assert.assertEquals(o.getClass(),String.class);
                         Assert.assertEquals("return_" + msg,o.toString());

@@ -40,7 +40,7 @@ public class SubscribeEntry9 {
     }
 
     @Subscriber(tag = "event8",model = ThreadModel.POOL,type = Type.DEFAULT,remote = true)
-    public void testMethod1(Event8 event8) {
+    public void testMethod1(Event8 event8) throws Exception {
         assertNotNull(event8);
         mTestMethod1Tag = event8.getMsg();
         String splite[] = event8.getMsg().split("#");

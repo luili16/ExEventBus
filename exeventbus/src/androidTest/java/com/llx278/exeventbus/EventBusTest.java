@@ -34,6 +34,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static junit.framework.Assert.*;
 
@@ -161,12 +162,6 @@ public class EventBusTest {
         assertEquals(0, subscribeMap3.size());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void subscribeWithReturn() throws Exception {
-        SubscribeEntry9 subscribeEntry9 = new SubscribeEntry9(null);
-        mEventBus.register(subscribeEntry9);
-    }
-
     @Test
     public void repeatSubscribe() throws Exception {
         SubscribeEntry3 subscribeEntry3 = new SubscribeEntry3(null);
@@ -190,6 +185,21 @@ public class EventBusTest {
         assertEquals(true,register3.get(2).isRemote());
         assertEquals(true,register3.get(3).isRemote());
         mEventBus.unRegister(subscribeEntry7);
+    }
+
+    @Test
+    public void stickyPublishTest() throws Exception {
+        // 先直接发布一个粘滞事件
+        CountDownLatch doneSignal = new CountDownLatch(3);
+        Event1 event1 = new Event1("event1");
+        Event3 event3 = new Event3("event3");
+        mEventBus.stickyPublish(event1,"event1");
+        mEventBus.stickyPublish(event3,"event3");
+        SubscribeEntry1 entry1 = new SubscribeEntry1(doneSignal);
+        mEventBus.register(entry1);
+        if(!doneSignal.await(1,TimeUnit.SECONDS)){
+            throw new TimeoutException("等待粘滞事件执行超时");
+        }
     }
 
     @Test
