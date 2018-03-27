@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * Created by llx on 2018/3/2.
  */
 
-public class Router implements Receiver {
+class Router implements Receiver {
 
     private static final String TAG = "Router";
     /**
