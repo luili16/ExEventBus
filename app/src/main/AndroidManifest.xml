@@ -17,56 +17,7 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".remote.TestService1"
-            android:process=":remote1" />
-        <service
-            android:name=".remote.TestService2"
-            android:process=":remote2" />
-        <service
-            android:name=".remote.TestService3"
-            android:process=":remote3" />
-        <service
-            android:name=".remote.TestService4"
-            android:process=":remote4" />
-        <service
-            android:name=".remote.TestService5"
-            android:process=":remote5" />
-        <service
-            android:name=".remote.TestService6"
-            android:process=":remote6" />
-        <service
-            android:name=".remote.TestService7"
-            android:process=":remote7" />
-        <service
-            android:name=".remote.TestService8"
-            android:process=":remote8" />
-        <service
-            android:name=".TestService9"
-            android:process=":remote9"
-            />
-        <service
-            android:name=".TestService10"
-            android:process=":remote10"
-            />
-        <service
-            android:name=".TestService11"
-            android:process=":remote11"
-            />
-        <service
-            android:name=".TestService12"
-            android:process=":remote12"
-            />
-        <service
-            android:name=".TestService13"
-            android:process=":remote13"
-            />
-        <service android:name=".TestService14"
-            android:process=":remote14"
-            />
-        <service android:name=".remote.TestService15"
-            android:process=":remote15"
-            />
+
 
     </application>
 
