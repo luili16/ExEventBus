@@ -10,5 +10,4 @@ import android.os.Bundle;
 public interface Receiver {
 
     void onMessageReceive(String where,Bundle message);
-
 }

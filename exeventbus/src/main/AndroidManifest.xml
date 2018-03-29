@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.llx278.exeventbus">
 
     <application
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true">
+        <service android:name="com.llx278.exeventbus.remote.RouteService"
+            android:process=":exeventbus_bd"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="com.llx278.exeventbus.sync"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

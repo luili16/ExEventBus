@@ -22,7 +22,7 @@ public class HandlerThreadExecutor implements Executor {
         }
     };
 
-    public HandlerThreadExecutor() {
+    HandlerThreadExecutor() {
         HandlerThread handlerThread = new HandlerThread("EventBusHandlerThread");
         handlerThread.start();
         mHandler = new Handler(handlerThread.getLooper());

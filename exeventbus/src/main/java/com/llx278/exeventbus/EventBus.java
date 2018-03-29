@@ -2,17 +2,17 @@ package com.llx278.exeventbus;
 
 import android.os.Parcelable;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.llx278.exeventbus.exception.IllegalRemoteArgumentException;
-import com.llx278.exeventbus.exception.IllegalSubscribeException;
 import com.llx278.exeventbus.execute.Executor;
 import com.llx278.exeventbus.execute.ExecutorFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,7 +40,7 @@ class EventBus {
      * @param subscriber 待注册的subscriber
      * @return 返回此次注册的subscriber所生成的订阅事件列表
      * @throws IllegalStateException 当订阅的方法的返回值不为空的时候，每一个订阅的消息只允许有一个可以执行的方法，
-     *         并且Type固定为BLOCK_RETURN。不符合此限制则会抛出IllegalStateException
+     *                               并且Type固定为BLOCK_RETURN。不符合此限制则会抛出IllegalStateException
      */
     public ArrayList<Event> register(Object subscriber) throws IllegalStateException {
         if (subscriber == null) {
@@ -82,6 +82,7 @@ class EventBus {
                         }
                         mSubscribedMap.put(newEvent, subscriptionList);
                     }
+
                 }
             }
             aClass = aClass.getSuperclass();
@@ -175,7 +176,7 @@ class EventBus {
      */
     public void publish(Object eventObj, String tag) {
         if (eventObj == null || TextUtils.isEmpty(tag)) {
-            Logger.e("LocalEventBus.publish(Object,String) param Object or tag is null!!", null);
+            ELogger.e("LocalEventBus.publish(Object,String) param Object or tag is null!!", null);
             return;
         }
         publish(eventObj, tag, void.class.getName());
@@ -198,12 +199,16 @@ class EventBus {
 
     Object publish(Object eventObj, String tag, String returnClassName, boolean isRemote) {
         if (eventObj == null || TextUtils.isEmpty(tag) || TextUtils.isEmpty(returnClassName)) {
-            Logger.e("LocalEventBus.publish(Object,String,Class) param Object or tag or " +
+            ELogger.e("LocalEventBus.publish(Object,String,Class) param Object or tag or " +
                     "class is null!!", null);
             return null;
         }
 
         Event event = new Event(tag, eventObj.getClass().getName(), returnClassName, isRemote);
+        return publish(event, eventObj);
+    }
+
+    private Object publish(Event event, Object eventObj) {
         CopyOnWriteArrayList<Subscription> subscriptionList = mSubscribedMap.get(event);
         if (subscriptionList != null) {
             for (Subscription subs : subscriptionList) {
@@ -211,7 +216,7 @@ class EventBus {
                 Object subscribe = subs.mSubscribeRef.get();
                 if (subscribe != null) {
                     if (subs.mType == Type.BLOCK_RETURN) {
-                        // 因为返回值只能有一个,所以默认只是第一个注册的有效!!
+                        // 因为返回值只能有一个,所以默认只是第一个注册的有效
                         return executor.submit(subs.mMethod, eventObj, subscribe);
                     } else if (subs.mType == Type.DEFAULT) {
                         executor.execute(subs.mMethod, eventObj, subscribe);
@@ -256,5 +261,15 @@ class EventBus {
 
     private boolean isSystemClass(String name) {
         return name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("android.");
+    }
+
+    class StickyHolder {
+        final Event mEvent;
+        final Object mEventObj;
+
+        StickyHolder(Event event, Object eventObj) {
+            mEvent = event;
+            mEventObj = eventObj;
+        }
     }
 }

@@ -1,5 +1,10 @@
 package com.llx278.eventbusdemo;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -7,12 +12,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.llx278.exeventbus.ELogger;
 import com.llx278.exeventbus.Subscriber;
 import com.llx278.exeventbus.ThreadModel;
+import com.llx278.exeventbus.remote.RouteService;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 public class MainActivity extends AppCompatActivity {
-
-    public static final String MAIN_TAG = "updateTextView";
 
     TextView textView;
     TextView event1Text;
@@ -28,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
             }
         });
         textView = findViewById(R.id.text);
@@ -49,14 +56,5 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
 
 
-    }
-
-    @Subscriber(tag = MAIN_TAG, model = ThreadModel.POST)
-    public void updateTextView(String msg) {
-        try {
-            textView.setText(msg);
-        } catch (Exception e) {
-            Log.e("main",Log.getStackTraceString(e));
-        }
     }
 }

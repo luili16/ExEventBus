@@ -40,7 +40,7 @@ public class SubscribeEntry9 {
     }
 
     @Subscriber(tag = "event8",model = ThreadModel.POOL,type = Type.DEFAULT,remote = true)
-    public void testMethod1(Event8 event8) {
+    public void testMethod1(Event8 event8) throws Exception {
         assertNotNull(event8);
         mTestMethod1Tag = event8.getMsg();
         String splite[] = event8.getMsg().split("#");
@@ -59,6 +59,7 @@ public class SubscribeEntry9 {
     @Subscriber(tag = "event9_SubscribeEntry9",model = ThreadModel.MAIN,type = Type.BLOCK_RETURN,remote = true)
     public String testMethod2(Event9 event9) {
         assertNotNull(event9);
+        mTestMethod2Tag = event9.getMsg();
         return "return_" + event9.getMsg();
     }
 

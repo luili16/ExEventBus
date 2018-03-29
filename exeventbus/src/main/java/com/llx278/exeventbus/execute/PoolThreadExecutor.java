@@ -19,7 +19,7 @@ public class PoolThreadExecutor implements Executor {
 
     PoolThreadExecutor() {
         // 先写死一个线程池，这里的线程池应该由EventBus从外部注入的
-        mExecutor = Executors.newCachedThreadPool();
+        mExecutor = Executors.newCachedThreadPool(new PoolThreadFactory());
     }
     @Override
     public void execute(final Method method, final Object paramObj, final Object object) {

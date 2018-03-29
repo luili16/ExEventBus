@@ -8,6 +8,7 @@ import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ServiceTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
 
 import com.llx278.exeventbus.IMyTestInterface;
 import com.llx278.exeventbus.Constant;
@@ -67,8 +68,6 @@ public class TransportLayerTest implements Receiver {
         Intent intent8 = new Intent(context, TestService8.class);
         IBinder binder8 = mServiceRule.bindService(intent8);
         mTest8 = IMyTestInterface.Stub.asInterface(binder8);
-
-
     }
 
     @After

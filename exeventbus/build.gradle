@@ -25,6 +25,7 @@ android {
     sourceSets {
         main {
             manifest.srcFile 'src/androidTest/AndroidManifest.xml'
+            manifest.srcFile 'src/main/AndroidManifest.xml'
         }
     }
 }

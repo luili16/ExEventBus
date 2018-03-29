@@ -41,7 +41,7 @@ public class SubscribeEntry1 {
     public void event3Method1(Event3 event3) {
         assertNotNull(event3);
         assertEquals(event3.msg,"event3");
-        Log.d("main","event3Method1 has called!");
+        Log.d("main","event3Method1 has called!111");
         if (mDownSignal != null) {
             mDownSignal.countDown();
         }
@@ -51,7 +51,7 @@ public class SubscribeEntry1 {
     public void event3Method(Event3 event3) {
         assertNotNull(event3);
         assertEquals(event3.msg,"event3");
-        Log.d("main","SubscribeEntry1 event3Method has called!");
+        Log.d("main","SubscribeEntry1 event3Method has called!22");
         if (mDownSignal != null) {
             mDownSignal.countDown();
         }

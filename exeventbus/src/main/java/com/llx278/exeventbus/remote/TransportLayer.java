@@ -1,14 +1,18 @@
 package com.llx278.exeventbus.remote;
 
 import android.os.Bundle;
+import android.os.Process;
+import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.llx278.exeventbus.ELogger;
 import com.llx278.exeventbus.exception.TimeoutException;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,11 +26,19 @@ public class TransportLayer implements ITransportLayer {
      * 一条消息所拥有的唯一id
      */
     private static final String KEY_ID = "#*kdfakfjya38783fjlajfdka78er7qw_)98rjflajflkdajfdklaj#";
+    /**
+     * 消息确认标志
+     */
     private static final String KEY_BODY = "JDIJF8958#*#&*Jfkdsjafkldajsfkld+-ajf*djfkdjfkdjfkdj#";
     private static final String BODY = "#ack#";
+    /**
+     * 标志此条消息是广播消息
+     */
+    private static final String KEY_BROADCAST = "kdfjdkj#$kdfjskhgdhjhgddksjfdsk**(fhdjhfjd";
+    private static final String BROADCAST_BODY = "broadcast";
 
     private final IMockPhysicalLayer mMockPhysicalLayer;
-    private final ConcurrentHashMap<String,CountDownLatch> mSignalMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CountDownLatch> mSignalMap = new ConcurrentHashMap<>();
 
     private Receiver mListener;
 
@@ -45,21 +57,20 @@ public class TransportLayer implements ITransportLayer {
     }
 
     @Override
-    public void send(final String address, final Bundle message, final long timeout) {
+    public void send(final String address, final Bundle message, final long timeout)
+            throws TimeoutException {
+
         String id = address + "#" + UUID.randomUUID();
-        // 对每一个待发送的消息添加一个id，这个id唯一的标识了一条消息
-        // 最好的形式是将这个id作为message的消息头，但是这里用的bundle，无法做字符串的拼接
-        // 因此，这里存在的隐患就是如果message中存在着某个字段与KEY_ID相同的话会导致覆盖掉消息体的内容
-        // 目前只能将KEY_ID这个字符串尽量设计的复杂一些，但实际上key都应该是有意义的字符串，如果真的一致了
-        // 那...该买彩票了!
         message.putString(KEY_ID, id);
-        mMockPhysicalLayer.send(address,message);
         CountDownLatch signal = new CountDownLatch(1);
-        mSignalMap.put(id,signal);
+        mSignalMap.put(id, signal);
+        mMockPhysicalLayer.send(address, message);
         try {
             if (!signal.await(timeout, TimeUnit.MILLISECONDS)) {
+                mSignalMap.remove(id);
                 throw new TimeoutException("send message to " + address + " failed!");
             }
+            // 发送成功，直接返回，
         } catch (InterruptedException ignore) {
         }
     }
@@ -67,20 +78,28 @@ public class TransportLayer implements ITransportLayer {
     @Override
     public void sendBroadcast(Bundle message) {
         // 直接发送，不需要考虑消息是否发送成功
-        mMockPhysicalLayer.send(null,message);
+        String address = Address.createOwnAddress().toString();
+        String id = address + "#" + UUID.randomUUID().toString();
+        message.putString(KEY_ID,id);
+        message.putString(KEY_BROADCAST,BROADCAST_BODY);
+        mMockPhysicalLayer.send(null, message);
+    }
+
+    @Override
+    public ArrayList<String> getAvailableAddress(String where) {
+        return mMockPhysicalLayer.getAvailableAddress(where);
     }
 
     /**
+     * 处理消息
      *
-     *处理消息
-     * @param where 发送消息的地址
+     * @param where   发送消息的地址
      * @param message 消息体
      */
     private void receive(String where, Bundle message) {
-
         // 如果接收到的消息是一条确认消息的话
         // 那么就直接返回
-        if (isAck(where,message)) {
+        if (isAck(where, message)) {
             return;
         }
 
@@ -88,23 +107,28 @@ public class TransportLayer implements ITransportLayer {
         // 防止干扰上层的业务
         String id = message.getString(KEY_ID);
         if (!TextUtils.isEmpty(id)) {
-            sendAck(where,id);
-            message.putString(KEY_ID,null);
-        }
 
-        if (mListener != null) {
-            mListener.onMessageReceive(where,message);
+            String broadcast = message.getString(KEY_BROADCAST);
+            if (!BROADCAST_BODY.equals(broadcast)) {
+                sendAck(where, id);
+                message.putString(KEY_ID,null);
+                message.putString(KEY_BROADCAST,null);
+            }
+
+            if (mListener != null) {
+                mListener.onMessageReceive(where, message);
+            }
         }
     }
 
-    private void sendAck(String where,String id) {
+    private void sendAck(String where, String id) {
         Bundle message = new Bundle();
-        message.putString(KEY_ID,id);
-        message.putString(KEY_BODY,BODY);
-        mMockPhysicalLayer.send(where,message);
+        message.putString(KEY_ID, id);
+        message.putString(KEY_BODY, BODY);
+        mMockPhysicalLayer.send(where, message);
     }
 
-    private boolean isAck(String where,Bundle message) {
+    private boolean isAck(String where, Bundle message) {
 
         String body = message.getString(KEY_BODY);
         if (BODY.equals(body)) {
@@ -134,7 +158,7 @@ public class TransportLayer implements ITransportLayer {
 
         @Override
         public void onMessageReceive(String where, Bundle message) {
-            TransportLayer.this.receive(where,message);
+            TransportLayer.this.receive(where, message);
         }
     }
 }

@@ -34,6 +34,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static junit.framework.Assert.*;
 
@@ -159,12 +160,6 @@ public class EventBusTest {
         assertEquals(3,unregister4.size());
         Map subscribeMap3 = getSubscribeMap();
         assertEquals(0, subscribeMap3.size());
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void subscribeWithReturn() throws Exception {
-        SubscribeEntry9 subscribeEntry9 = new SubscribeEntry9(null);
-        mEventBus.register(subscribeEntry9);
     }
 
     @Test

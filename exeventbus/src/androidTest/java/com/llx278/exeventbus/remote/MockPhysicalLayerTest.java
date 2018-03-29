@@ -22,10 +22,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
+ *
+ *
  * Created by llx on 2018/2/28.
  */
 @RunWith(AndroidJUnit4.class)
@@ -68,6 +71,19 @@ public class MockPhysicalLayerTest implements Receiver {
 
     @Rule
     public final ServiceTestRule mServiceRule = new ServiceTestRule();
+
+    @Test
+    public void getClientAddressTest() throws Exception {
+        String where = Address.createOwnAddress().toString();
+        ArrayList<String> availableAddress = mMockPhysicalLayer.getAvailableAddress(where);
+        Log.d("main","availableAddress : " + availableAddress.toString());
+        Assert.assertEquals(4,availableAddress.size());
+        mTest1.mockSendMessage1(null,null,-1);
+        Thread.sleep(2000);
+        ArrayList<String> availableAddress1 = mMockPhysicalLayer.getAvailableAddress(where);
+        Log.d("main","avaliableAddress : " + availableAddress1.toString());
+        Assert.assertEquals(4,availableAddress1.size());
+    }
 
 
     @Test
@@ -115,6 +131,7 @@ public class MockPhysicalLayerTest implements Receiver {
 
     private Address createTest1Address() throws Exception {
         String processName1 = mTest1.getProcessName();
+        Log.d("main","processName1 : " + processName1);
         // 模拟向TestService1所在的进程发送消息
         int pid1 = Integer.parseInt(processName1.split("-")[1]);
         return Address.createAddress(pid1);
@@ -122,18 +139,21 @@ public class MockPhysicalLayerTest implements Receiver {
 
     private Address createTest2Address() throws Exception {
         String processName2 = mTest2.getProcessName();
+        Log.d("main","processName2 : " + processName2);
         int pid2 = Integer.parseInt(processName2.split("-")[1]);
         return Address.createAddress(pid2);
     }
 
     private Address createTest3Address() throws Exception {
         String processName3 = mTest3.getProcessName();
+        Log.d("main","processName3 : " + processName3);
         int pid3 = Integer.parseInt(processName3.split("-")[1]);
         return Address.createAddress(pid3);
     }
 
     private Address createTest4Address() throws Exception {
         String processName4 = mTest4.getProcessName();
+        Log.d("main","processName4 : " + processName4);
         int pid4 = Integer.parseInt(processName4.split("-")[1]);
         return Address.createAddress(pid4);
     }

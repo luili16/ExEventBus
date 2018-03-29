@@ -54,6 +54,16 @@ public class TestService1 extends Service implements Receiver {
 
         @Override
         public boolean mockSendMessage1(String address, Bundle message, long timeout) throws RemoteException {
+            if (address == null) {
+                Log.d("main","pid : " + Process.myPid() + " 杀死自己");
+                new Thread(){
+                    @Override
+                    public void run() {
+                        Process.killProcess(Process.myPid());
+                    }
+                }.start();
+
+            }
             return false;
         }
 
@@ -77,6 +87,11 @@ public class TestService1 extends Service implements Receiver {
         super.onCreate();
         mTransferLayer = new MockPhysicalLayer(this);
         mTransferLayer.setOnReceiveListener(this);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return super.onStartCommand(intent,flags,startId);
     }
 
     @Override

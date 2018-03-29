@@ -13,6 +13,7 @@ import android.util.Log;
 
 
 import com.llx278.exeventbus.*;
+import com.llx278.exeventbus.exception.TimeoutException;
 import com.llx278.exeventbus.remote.Address;
 import com.llx278.exeventbus.remote.MockPhysicalLayer;
 import com.llx278.exeventbus.remote.Receiver;
@@ -39,6 +40,7 @@ public class TestService5 extends Service implements Receiver {
 
         @Override
         public String getBroadcastStr() throws RemoteException {
+            Log.d("main","getBroadcastStr!!!!! + " + mBroadcastStr);
             return mBroadcastStr;
         }
 
@@ -56,7 +58,11 @@ public class TestService5 extends Service implements Receiver {
 
             Bundle message1 = new Bundle(message);
             message1.putString(com.llx278.exeventbus.Constant.KEY_MY_OWN_ADDRESS,Address.createOwnAddress().toString());
-            mTransportLayer.send(address,message1,timeout);
+            try {
+                mTransportLayer.send(address,message1,timeout);
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
             return true;
         }
 

@@ -20,6 +20,7 @@ import com.llx278.exeventbus.event.Event10;
 import com.llx278.exeventbus.event.Event11;
 import com.llx278.exeventbus.event.Event8;
 import com.llx278.exeventbus.event.Event9;
+import com.llx278.exeventbus.exception.TimeoutException;
 import com.llx278.exeventbus.remote.Address;
 
 import junit.framework.Assert;
@@ -151,7 +152,11 @@ public class TestService13 extends Service {
             Event8 event8 = new Event8("event8_fromTestService13");
             String tag = "event8_sendTo";
             String returnClassName = void.class.getName();
-            mExEventBus.remotePublish(event8,tag,returnClassName,1000 * 2);
+            try {
+                mExEventBus.remotePublish(event8,tag,returnClassName,1000 * 2);
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
         }
     };
 
@@ -175,7 +180,12 @@ public class TestService13 extends Service {
                         String uuid = UUID.randomUUID().toString();
                         String msg = body + "#" + mTag + "#" + uuid;
                         newHolder.event.setMsg(msg);
-                        mExEventBus.remotePublish(newHolder.event,newHolder.tag,newHolder.returnClassName,1000 * 2);
+                        Log.d("main","TestService13 0 event : " + newHolder.event.toString());
+                        try {
+                            mExEventBus.remotePublish(newHolder.event,newHolder.tag,newHolder.returnClassName,1000 * 2);
+                        } catch (TimeoutException e) {
+                            throw new RuntimeException(e);
+                        }
                         // 等待执行结果
                         boolean received = false;
                         long endTime = SystemClock.uptimeMillis() + 1000 * 2;
@@ -196,6 +206,7 @@ public class TestService13 extends Service {
                                     break;
                                 }
                             }
+
                             Assert.assertTrue(received);
                             Assert.assertEquals(body,value10);
                             Assert.assertEquals(body,value11);
@@ -211,7 +222,13 @@ public class TestService13 extends Service {
                         Holder newHolder = holder.deepCopy();
                         String msg = UUID.randomUUID().toString();
                         newHolder.event.setMsg(msg);
-                        Object o = mExEventBus.remotePublish(newHolder.event, newHolder.tag, newHolder.returnClassName, 1000 * 2);
+                        Object o = null;
+                        Log.d("main","TestService13 - event : " + newHolder.event.toString());
+                        try {
+                            o = mExEventBus.remotePublish(newHolder.event, newHolder.tag, newHolder.returnClassName, 1000 * 2);
+                        } catch (TimeoutException e) {
+                            throw new RuntimeException(e);
+                        }
                         Assert.assertNotNull(o);
                         Assert.assertEquals(o.getClass(),String.class);
                         Assert.assertEquals("return_" + msg,o.toString());
@@ -244,7 +261,7 @@ public class TestService13 extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("main1","testService13 onCreate");
+        Log.d("main","testService13 onCreate");
         Intent service10Intent = new Intent(this,TestService10.class);
         bindService(service10Intent,mService10Connection, Context.BIND_AUTO_CREATE);
         Intent service11Intent = new Intent(this,TestService11.class);
@@ -254,17 +271,11 @@ public class TestService13 extends Service {
 
         addEventList();
         mExecutor = Executors.newCachedThreadPool();
-        new Thread(){
-            @Override
-            public void run() {
-                ExEventBus.create(TestService13.this);
-                mExEventBus = ExEventBus.getDefault();
-                mSubscribeEntry11 = new SubscribeEntry11(null);
-                mExEventBus.register(mSubscribeEntry11);
-                mExEventBus.register(TestService13.this);
-            }
-        }.start();
-
+        ExEventBus.create(TestService13.this);
+        mExEventBus = ExEventBus.getDefault();
+        mSubscribeEntry11 = new SubscribeEntry11(null);
+        mExEventBus.register(mSubscribeEntry11);
+        mExEventBus.register(TestService13.this);
     }
 
     @Subscriber(tag = mTag,type = Type.DEFAULT,model = ThreadModel.POOL,remote = true)

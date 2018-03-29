@@ -93,36 +93,8 @@ public class ExEventBusTest {
         ExEventBus.create(context);
         sExEventBus = ExEventBus.getDefault();
 
-        // 等待收到其他进程发送订阅事件
-         sAddress10 = sTest10.getAddress();
-         sAddress11 = sTest11.getAddress();
-         sAddress12 = sTest12.getAddress();
-         sAddress13 = sTest13.getAddress();
-        long endTime = SystemClock.uptimeMillis() + sDefaultTimeout;
-        // 如果2s内没有收到其他进程的
-        Router router = getRouterObj();
-        boolean received = false;
-        while (SystemClock.uptimeMillis() < endTime) {
-            Thread.sleep(50);
-            ConcurrentHashMap<String, CopyOnWriteArrayList<Event>> subScribeEventList =
-                    router.getSubScribeEventList();
-            CopyOnWriteArrayList<Event> address10Events = subScribeEventList.get(sAddress10);
-            CopyOnWriteArrayList<Event> address11Events = subScribeEventList.get(sAddress11);
-            CopyOnWriteArrayList<Event> address12Events = subScribeEventList.get(sAddress12);
-            CopyOnWriteArrayList<Event> address13Events = subScribeEventList.get(sAddress13);
-            if (address10Events != null && !address10Events.isEmpty()&&
-                    address11Events != null && !address11Events.isEmpty()&&
-                    address12Events != null && !address12Events.isEmpty()&&
-                    address13Events != null && !address13Events.isEmpty()
-                    ) {
-                received = true;
-                break;
-            }
-        }
-        Log.d("main","received : " + received);
         sSubscribeEntry12 = new SubscribeEntry12();
         sExEventBus.register(sSubscribeEntry12);
-        assertTrue(received);
         addEventList();
         // 确保进程之间已经建立连接
         Thread.sleep(1000 * 5);
@@ -155,31 +127,6 @@ public class ExEventBusTest {
         sTest11.killSelf();
         sTest12.killSelf();
         sTest13.killSelf();
-
-        // 确定已经接收到了所有其他进程的退出消息
-        Router router = getRouterObj();
-        boolean destroy = false;
-        long endTime = SystemClock.uptimeMillis() + 1000 * 5;
-        while (SystemClock.uptimeMillis() < endTime) {
-            Thread.sleep(10);
-            ConcurrentHashMap<String, CopyOnWriteArrayList<Event>> subScribeEventList =
-                    router.getSubScribeEventList();
-            CopyOnWriteArrayList<Event> address10Events = subScribeEventList.get(sAddress10);
-            CopyOnWriteArrayList<Event> address11Events = subScribeEventList.get(sAddress11);
-            CopyOnWriteArrayList<Event> address12Events = subScribeEventList.get(sAddress12);
-            CopyOnWriteArrayList<Event> address13Events = subScribeEventList.get(sAddress13);
-            if (address10Events == null || address10Events.isEmpty()&&
-                    address11Events == null || address11Events.isEmpty()&&
-                    address12Events == null || address12Events.isEmpty()&&
-                    address13Events == null || address13Events.isEmpty()
-                    ) {
-                destroy = true;
-                break;
-            }
-        }
-
-        Log.d("main","destroy : "+ destroy);
-        assertTrue(destroy);
         ExEventBus.destroy();
     }
 
@@ -195,7 +142,10 @@ public class ExEventBusTest {
      */
     @Test
     public void publishToOtherProcess() throws Exception {
-        Event8 event8 = new Event8("event8");
+        String body = UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString();
+        String msg = body + "#" + M_TAG + "#" + uuid;
+        Event8 event8 = new Event8(msg);
         String tag = "event8";
         sExEventBus.remotePublish(event8,tag,void.class.getName(),1000 * 2);
 
@@ -219,17 +169,17 @@ public class ExEventBusTest {
                 break;
             }
         }
-        assertEquals("event8",result10);
-        assertEquals("event8",result11);
-        assertEquals("event8",result12);
-        assertEquals("event8",result13);
+        assertEquals(msg,result10);
+        assertEquals(msg,result11);
+        assertEquals(msg,result12);
+        assertEquals(msg,result13);
     }
 
     /**
      * 测试发布一个需要返回值的消息到其他进程
      */
     @Test
-    public void publishToOtherProcessAndWaitReturn() {
+    public void publishToOtherProcessAndWaitReturn() throws Exception {
         Event9 event9 = new Event9("event9_SubscribeEntry8");
         String tag = "event9_SubscribeEntry8";
         // 分别发送消息给其他4个进程
@@ -265,44 +215,6 @@ public class ExEventBusTest {
     }
 
     /**
-     * 测试其他的进程发布一个消息到此进程
-     */
-    @Test
-    public void otherProcessPublishToHere() throws Exception {
-
-        sSubscribeEntry12.mTestMethod1Tag = null;
-        sTest10.sendTo(Address.createOwnAddress().toString());
-        waitNotEmpty();
-        assertEquals("event8_fromTestService10", sSubscribeEntry12.mTestMethod1Tag);
-
-
-        sSubscribeEntry12.mTestMethod1Tag = null;
-        sTest11.sendTo(Address.createOwnAddress().toString());
-        waitNotEmpty();
-        assertEquals("event8_fromTestService11", sSubscribeEntry12.mTestMethod1Tag);
-
-        sSubscribeEntry12.mTestMethod1Tag = null;
-        sTest12.sendTo(Address.createOwnAddress().toString());
-        waitNotEmpty();
-        assertEquals("event8_fromTestService12", sSubscribeEntry12.mTestMethod1Tag);
-
-        sSubscribeEntry12.mTestMethod1Tag = null;
-        sTest13.sendTo(Address.createOwnAddress().toString());
-        waitNotEmpty();
-        assertEquals("event8_fromTestService13", sSubscribeEntry12.mTestMethod1Tag);
-    }
-
-    private void waitNotEmpty() throws Exception {
-        long endTIme = SystemClock.uptimeMillis() + sDefaultTimeout;
-        while (SystemClock.uptimeMillis() < endTIme) {
-            Thread.sleep(50);
-            if (!TextUtils.isEmpty(sSubscribeEntry12.mTestMethod1Tag)) {
-                break;
-            }
-        }
-    }
-
-    /**
      * 测试进程彼此之间互相发送消息
      */
     @Test
@@ -310,7 +222,7 @@ public class ExEventBusTest {
 
         sExEventBus.register(this);
 
-        int count = 10000;
+        int count = 1000;
 
         sTest10.start(count);
         sTest11.start(count);
@@ -328,8 +240,9 @@ public class ExEventBusTest {
                 String body = UUID.randomUUID().toString();
                 String uuid = UUID.randomUUID().toString();
                 String msg = body + "#" + M_TAG + "#" + uuid;
-                holder.event.setMsg(msg);
-                sExEventBus.remotePublish(holder.event,holder.tag,holder.returnClassName,1000 * 2);
+                newHolder.event.setMsg(msg);
+                //Log.d("main","ExeventBus 0 event : " + newHolder.event.toString() + " tag : " + newHolder.tag);
+                sExEventBus.remotePublish(newHolder.event,newHolder.tag,newHolder.returnClassName,1000 * 2);
                 boolean received = false;
                 long endTimeReturn = SystemClock.uptimeMillis() + 1000 * 2;
                 String value10 = null;
@@ -367,9 +280,11 @@ public class ExEventBusTest {
                 }
             } else {
                 Holder holder = sEventTemp.get(index);
+                Holder newHolder = holder.deepCopy();
                 String msg = UUID.randomUUID().toString();
-                holder.event.setMsg(msg);
-                Object o = sExEventBus.remotePublish(holder.event, holder.tag, holder.returnClassName, 1000 * 2);
+                newHolder.event.setMsg(msg);
+                //Log.d("main","exeventBus - event : " + newHolder.event.toString() + "tag : " + newHolder.tag);
+                Object o = sExEventBus.remotePublish(newHolder.event, newHolder.tag, newHolder.returnClassName, 1000 * 2);
                 Assert.assertNotNull(o);
                 Assert.assertEquals(o.getClass(),String.class);
                 Assert.assertEquals("return_" + msg,o.toString());

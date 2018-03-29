@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.llx278.exeventbus.*;
+import com.llx278.exeventbus.exception.TimeoutException;
 import com.llx278.exeventbus.remote.Address;
 import com.llx278.exeventbus.remote.MockPhysicalLayer;
 import com.llx278.exeventbus.remote.Receiver;
@@ -52,7 +53,11 @@ public class TestService8 extends Service implements Receiver {
 
         @Override
         public boolean mockSendMessage1(String address, Bundle message, long timeout) throws RemoteException {
-            mTransportLayer.send(address,message,timeout);
+            try {
+                mTransportLayer.send(address,message,timeout);
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
             return true;
         }
 

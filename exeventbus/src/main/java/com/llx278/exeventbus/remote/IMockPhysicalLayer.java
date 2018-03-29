@@ -2,6 +2,9 @@ package com.llx278.exeventbus.remote;
 
 import android.os.Bundle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * IMockPhysicalLayer定义了一个进程如何通信
  * Created by llx on 2018/2/28.
@@ -26,4 +29,10 @@ public interface IMockPhysicalLayer {
      * @param listener
      */
     void setOnReceiveListener(Receiver listener);
+
+    /**
+     * 获得可用的地址
+     * @return 可用的地址
+     */
+    ArrayList<String> getAvailableAddress(String where);
 }
