@@ -21,14 +21,6 @@ public class ELogger {
     public static void d(String tag, String msg) {
         if(DEBUG) {
             Log.d(tag,msg);
-            try {
-                String timeStamp = timeStamp2DateStr(System.currentTimeMillis());
-                Class<?> aClass = Class.forName("de.robv.android.xposed.XposedBridge");
-                if (aClass != null) {
-                    XposedBridge.log(timeStamp + " " + tag + " " + msg);
-                }
-
-            } catch (Exception ignore){}
         }
     }
 
@@ -39,13 +31,6 @@ public class ELogger {
     public static void i(String tag,String msg) {
         if (DEBUG){
             Log.i(TAG,msg);
-            try {
-                String timeStamp = timeStamp2DateStr(System.currentTimeMillis());
-                Class<?> aClass = Class.forName("de.robv.android.xposed.XposedBridge");
-                if (aClass != null) {
-                    XposedBridge.log(timeStamp + " " + tag + " " + msg);
-                }
-            } catch (Exception ignore){}
         }
     }
 
@@ -56,22 +41,10 @@ public class ELogger {
     public static void e(String tag,String msg,Throwable e){
         if (e != null) {
             Log.e(tag,msg,e);
-            try {
-                String timeStamp = timeStamp2DateStr(System.currentTimeMillis());
-                Class<?> aClass = Class.forName("de.robv.android.xposed.XposedBridge");
-                if (aClass != null) {
-                    XposedBridge.log(timeStamp + " " + tag + " " + msg);
-                    XposedBridge.log(e);
-                }
-            } catch (Exception ignore){}
         }
     }
 
     public static void e(String msg,Throwable e) {
         e(TAG,msg,e);
-    }
-
-    private static String timeStamp2DateStr(long timestamp) {
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date(timestamp));
     }
 }
