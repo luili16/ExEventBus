@@ -54,8 +54,15 @@ class EventBus {
                 Subscriber annotation = method.getAnnotation(Subscriber.class);
                 if (annotation != null) {
                     Class<?>[] parameterTypes = method.getParameterTypes();
-                    if (parameterTypes != null && parameterTypes.length == 1) {
-                        Class<?> paramType = convertType(parameterTypes[0]);
+                    if (parameterTypes != null && parameterTypes.length <= 1) {
+                        Class<?> paramType;
+                        if (parameterTypes.length == 1) {
+                            paramType = convertType(parameterTypes[0]);
+                        } else {
+                            // 参数是空
+                            paramType = void.class;
+                        }
+
                         Class<?> returnType = method.getReturnType();
                         boolean isRemote = annotation.remote();
                         // 此订阅事件可以被远程执行
@@ -82,7 +89,6 @@ class EventBus {
                         }
                         mSubscribedMap.put(newEvent, subscriptionList);
                     }
-
                 }
             }
             aClass = aClass.getSuperclass();
@@ -105,6 +111,10 @@ class EventBus {
         }
         // 既没有实现Serializable也没有实现Parcelable
         if (!isParcelable && !isSerializable) {
+            // 忽略空参数
+            if (paramType.equals(void.class)) {
+                return;
+            }
             throw new IllegalRemoteArgumentException("subscriber param(" + paramType.getName() + ") must " +
                     "implements Parcelable or serializable!");
         }
@@ -175,7 +185,7 @@ class EventBus {
      * @param tag      这个事件的标志
      */
     public void publish(Object eventObj, String tag) {
-        if (eventObj == null || TextUtils.isEmpty(tag)) {
+        if (TextUtils.isEmpty(tag)) {
             ELogger.e("LocalEventBus.publish(Object,String) param Object or tag is null!!", null);
             return;
         }
@@ -198,13 +208,13 @@ class EventBus {
 
 
     Object publish(Object eventObj, String tag, String returnClassName, boolean isRemote) {
-        if (eventObj == null || TextUtils.isEmpty(tag) || TextUtils.isEmpty(returnClassName)) {
-            ELogger.e("LocalEventBus.publish(Object,String,Class) param Object or tag or " +
+        if (TextUtils.isEmpty(tag) || TextUtils.isEmpty(returnClassName)) {
+            ELogger.e("LocalEventBus.publish(Object,String,Class) tag or " +
                     "class is null!!", null);
             return null;
         }
-
-        Event event = new Event(tag, eventObj.getClass().getName(), returnClassName, isRemote);
+        String paramClassName = eventObj == null?void.class.getName():eventObj.getClass().getName();
+        Event event = new Event(tag, paramClassName, returnClassName, isRemote);
         return publish(event, eventObj);
     }
 

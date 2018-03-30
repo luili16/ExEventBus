@@ -26,7 +26,12 @@ public class MainThreadExecutor implements Executor {
             @Override
             public void run() {
                 try {
-                    method.invoke(obj,paramObj);
+                    if (paramObj == null) {
+                        method.invoke(obj);
+                    } else {
+                        method.invoke(obj,paramObj);
+                    }
+
                 } catch (IllegalAccessException ignore) {
                     // never happen
                 } catch (InvocationTargetException e) {

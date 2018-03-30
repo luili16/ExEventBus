@@ -56,6 +56,17 @@ public class EventBusTest {
     }
 
     @Test
+    public void emptyParam() throws Exception {
+        SubscribeEntry1 subscribeEntry1 = new SubscribeEntry1();
+        mEventBus.register(subscribeEntry1);
+
+        String tag = "event_void";
+        mEventBus.publish(null,tag);
+        String publish = (String) mEventBus.publish(null, tag, String.class.getName());
+        assertEquals("event5Method",publish);
+    }
+
+    @Test
     public void blockReturn() throws Exception {
         SubscribeEntry6 subscribeEntry6 = new SubscribeEntry6();
         mEventBus.register(subscribeEntry6);

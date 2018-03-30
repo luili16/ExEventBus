@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.llx278.exeventbus.Subscriber;
 import com.llx278.exeventbus.ThreadModel;
+import com.llx278.exeventbus.Type;
 import com.llx278.exeventbus.event.Event1;
 import com.llx278.exeventbus.event.Event3;
 
@@ -56,4 +57,19 @@ public class SubscribeEntry1 {
             mDownSignal.countDown();
         }
     }
+
+    @Subscriber(model = ThreadModel.POOL,tag = "event_void")
+    public void event4Method() {
+        Log.d("main","SubscribeEntry1 event4Method has called!");
+        if (mDownSignal != null) {
+            mDownSignal.countDown();
+        }
+    }
+
+    @Subscriber(model = ThreadModel.POOL,tag = "event_void",type = Type.BLOCK_RETURN)
+    public String event5Method() {
+        Log.d("main","SubscribeEntry1 event5Method has called!");
+        return "event5Method";
+    }
+
 }

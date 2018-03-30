@@ -25,7 +25,11 @@ class MyRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            mReturnValue = mMethod.invoke(mObject, mParamObj);
+            if (mParamObj == null) {
+                mReturnValue = mMethod.invoke(mObject);
+            } else {
+                mReturnValue = mMethod.invoke(mObject, mParamObj);
+            }
         } catch (IllegalAccessException ignore) {
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e);

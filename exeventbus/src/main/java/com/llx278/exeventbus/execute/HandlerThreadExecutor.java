@@ -15,12 +15,6 @@ import java.util.concurrent.CountDownLatch;
 public class HandlerThreadExecutor implements Executor {
 
     private final Handler mHandler;
-    private final ThreadLocal<Object> mThreadLocalLock = new ThreadLocal<Object>(){
-        @Override
-        protected Object initialValue() {
-            return new Object();
-        }
-    };
 
     HandlerThreadExecutor() {
         HandlerThread handlerThread = new HandlerThread("EventBusHandlerThread");
@@ -34,7 +28,11 @@ public class HandlerThreadExecutor implements Executor {
             @Override
             public void run() {
                 try {
-                    method.invoke(object,paramObj);
+                    if (paramObj == null) {
+                        method.invoke(object);
+                    } else {
+                        method.invoke(object,paramObj);
+                    }
                 } catch (IllegalAccessException ignore) {
                     // never happen
                 } catch (InvocationTargetException e) {

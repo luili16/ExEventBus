@@ -27,7 +27,12 @@ public class PoolThreadExecutor implements Executor {
             @Override
             public void run() {
                 try {
-                    method.invoke(object,paramObj);
+                    if (paramObj == null) {
+                        method.invoke(object);
+                    } else {
+                        method.invoke(object,paramObj);
+                    }
+
                 } catch (IllegalAccessException ignore) {
                 } catch (InvocationTargetException e) {
                     throw new RuntimeException(e);
@@ -43,7 +48,11 @@ public class PoolThreadExecutor implements Executor {
             return mExecutor.submit(new Callable<Object>() {
                 @Override
                 public Object call() throws Exception {
-                    return method.invoke(obj,paramObj);
+                    if (paramObj == null) {
+                        return method.invoke(obj);
+                    } else {
+                        return method.invoke(obj,paramObj);
+                    }
                 }
             }).get();
         } catch (InterruptedException ignore) {

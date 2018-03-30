@@ -27,7 +27,11 @@ public class PostThreadExecutor implements Executor {
     @Override
     public Object submit(Method method, Object paramObj, Object obj) {
         try {
-            return method.invoke(obj,paramObj);
+            if (paramObj == null) {
+                return method.invoke(obj);
+            } else {
+                return method.invoke(obj,paramObj);
+            }
         } catch (IllegalAccessException ignore) {
             // never happen
         } catch (InvocationTargetException e) {
