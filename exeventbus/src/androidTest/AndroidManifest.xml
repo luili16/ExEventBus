@@ -58,6 +58,7 @@
         <service android:name="com.llx278.exeventbus.remote.TestService15"
             android:process=":remote15"
             />
+
     </application>
 
 </manifest>

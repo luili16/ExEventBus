@@ -22,7 +22,7 @@ public class ELogger {
         if(DEBUG) {
             Log.d(tag,msg);
             try {
-                String timeStamp = timeStamp2DateStr(SystemClock.currentThreadTimeMillis()/1000);
+                String timeStamp = timeStamp2DateStr(System.currentTimeMillis());
                 Class<?> aClass = Class.forName("de.robv.android.xposed.XposedBridge");
                 if (aClass != null) {
                     XposedBridge.log(timeStamp + " " + tag + " " + msg);
@@ -40,7 +40,7 @@ public class ELogger {
         if (DEBUG){
             Log.i(TAG,msg);
             try {
-                String timeStamp = timeStamp2DateStr(SystemClock.currentThreadTimeMillis()/1000);
+                String timeStamp = timeStamp2DateStr(System.currentTimeMillis());
                 Class<?> aClass = Class.forName("de.robv.android.xposed.XposedBridge");
                 if (aClass != null) {
                     XposedBridge.log(timeStamp + " " + tag + " " + msg);
@@ -57,7 +57,7 @@ public class ELogger {
         if (e != null) {
             Log.e(tag,msg,e);
             try {
-                String timeStamp = timeStamp2DateStr(SystemClock.currentThreadTimeMillis()/1000);
+                String timeStamp = timeStamp2DateStr(System.currentTimeMillis());
                 Class<?> aClass = Class.forName("de.robv.android.xposed.XposedBridge");
                 if (aClass != null) {
                     XposedBridge.log(timeStamp + " " + tag + " " + msg);

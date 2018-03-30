@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.llx278.exeventbus.ELogger;
 import com.llx278.exeventbus.Event;
 
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class RouteService extends Service {
                         try {
                             iReceiver.onMessageReceive(where,message);
                         } catch (RemoteException ignore){
-                            Log.e("main","",ignore);
+                            ELogger.e("main","",ignore);
                         }
                     }
                 }

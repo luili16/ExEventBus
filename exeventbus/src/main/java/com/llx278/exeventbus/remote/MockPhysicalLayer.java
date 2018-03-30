@@ -15,8 +15,7 @@ import com.llx278.exeventbus.ELogger;
 import java.util.ArrayList;
 
 /**
- * 对ITransferLayer的具体实现
- * 这里用广播来实现消息间的通信，因为只有广播能做到在动态注册.
+ * 对IMockPhysicalLayer的具体实现
  * Created by llx on 2018/2/28.
  */
 
@@ -46,19 +45,14 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
     }
 
     private void register() {
-        ELogger.d( "register");
         Intent routeIntent = new Intent("com.llx278.exeventbus.sync");
         String pkg = mContext.getPackageName();
         String cls = "com.llx278.exeventbus.remote.RouteService";
         ComponentName componentName = new ComponentName(pkg,cls);
         routeIntent.setComponent(componentName);
-        boolean success = mContext.getApplicationContext().bindService(routeIntent, mConnection, Context.BIND_AUTO_CREATE);
+        boolean success = mContext.bindService(routeIntent, mConnection, Context.BIND_AUTO_CREATE);
         if (!success) {
-            ELogger.d("绑定服务失败，更换package为:com.tensynchina.hook");
-            pkg = "com.tensynchina.hook";
-            ComponentName newComponentName = new ComponentName(pkg,cls);
-            routeIntent.setComponent(newComponentName);
-            mContext.getApplicationContext().bindService(routeIntent, mConnection, Context.BIND_AUTO_CREATE);
+            ELogger.d("bind route service failed");
         }
     }
 
@@ -93,10 +87,8 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
     }
 
     private class RouteServiceConnection implements ServiceConnection {
-
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            ELogger.d("main", "connect success! packageName : " + name.getPackageName());
             mRoute = IRouter.Stub.asInterface(service);
             String where = Address.createOwnAddress().toString();
             try {
@@ -108,7 +100,6 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            ELogger.d("main", "disconnected! packageName : " + name.getPackageName());
         }
     }
 

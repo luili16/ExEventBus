@@ -262,14 +262,4 @@ class EventBus {
     private boolean isSystemClass(String name) {
         return name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("android.");
     }
-
-    class StickyHolder {
-        final Event mEvent;
-        final Object mEventObj;
-
-        StickyHolder(Event event, Object eventObj) {
-            mEvent = event;
-            mEventObj = eventObj;
-        }
-    }
 }
