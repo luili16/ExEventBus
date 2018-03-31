@@ -86,8 +86,8 @@ public class TransportLayer implements ITransportLayer {
     }
 
     @Override
-    public ArrayList<String> getAvailableAddress(String where) {
-        return mMockPhysicalLayer.getAvailableAddress(where);
+    public ArrayList<String> getAvailableAddress() {
+        return mMockPhysicalLayer.getAvailableAddress();
     }
 
     /**

@@ -129,8 +129,7 @@ public class Router implements Receiver {
     }
 
     ArrayList<Integer> getAvailableProcessId() {
-        String where = Address.createOwnAddress().toString();
-        ArrayList<String> availableAddress = mTransportLayer.getAvailableAddress(where);
+        ArrayList<String> availableAddress = mTransportLayer.getAvailableAddress();
         ArrayList<Integer> processIdList = new ArrayList<>();
         for (String address : availableAddress) {
             Address address1 = Address.toAddress(address);
@@ -151,8 +150,7 @@ public class Router implements Receiver {
      */
     Object route(Object eventObject, String tag, String returnClassName, long timeout)
             throws TimeoutException {
-        String where = Address.createOwnAddress().toString();
-        ArrayList<String> availableAddress = mTransportLayer.getAvailableAddress(where);
+        ArrayList<String> availableAddress = mTransportLayer.getAvailableAddress();
 
         if (availableAddress == null || availableAddress.isEmpty()) {
             ELogger.e("no available address",null);

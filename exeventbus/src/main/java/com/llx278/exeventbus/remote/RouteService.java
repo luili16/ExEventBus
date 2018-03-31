@@ -103,7 +103,6 @@ public class RouteService extends Service {
                     // 仅仅就是用来测试这个进程是不是存在
                     iReceiver.onMessageReceive(null,null);
                 } catch (RemoteException ignore) {
-                    Log.e("main","",ignore);
                     mReceiverMap.remove(address);
                 }
             }

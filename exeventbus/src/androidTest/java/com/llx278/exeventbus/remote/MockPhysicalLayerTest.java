@@ -74,13 +74,12 @@ public class MockPhysicalLayerTest implements Receiver {
 
     @Test
     public void getClientAddressTest() throws Exception {
-        String where = Address.createOwnAddress().toString();
-        ArrayList<String> availableAddress = mMockPhysicalLayer.getAvailableAddress(where);
+        ArrayList<String> availableAddress = mMockPhysicalLayer.getAvailableAddress();
         Log.d("main","availableAddress : " + availableAddress.toString());
         Assert.assertEquals(4,availableAddress.size());
         mTest1.mockSendMessage1(null,null,-1);
         Thread.sleep(2000);
-        ArrayList<String> availableAddress1 = mMockPhysicalLayer.getAvailableAddress(where);
+        ArrayList<String> availableAddress1 = mMockPhysicalLayer.getAvailableAddress();
         Log.d("main","avaliableAddress : " + availableAddress1.toString());
         Assert.assertEquals(4,availableAddress1.size());
     }

@@ -34,5 +34,5 @@ public interface IMockPhysicalLayer {
      * 获得可用的地址
      * @return 可用的地址
      */
-    ArrayList<String> getAvailableAddress(String where);
+    ArrayList<String> getAvailableAddress();
 }

@@ -35,7 +35,7 @@ public interface ITransportLayer {
      * 返回当前可以发送消息的进程的地址
      * @return 可发送消息的进程的地址
      */
-    ArrayList<String> getAvailableAddress(String where);
+    ArrayList<String> getAvailableAddress();
 
     void setOnReceiveListener(Receiver listener);
 

@@ -44,11 +44,7 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
     }
 
     private void register() {
-        Intent routeIntent = new Intent("com.llx278.exeventbus.sync");
-        String pkg = mContext.getPackageName();
-        String cls = "com.llx278.exeventbus.remote.RouteService";
-        ComponentName componentName = new ComponentName(pkg,cls);
-        routeIntent.setComponent(componentName);
+        Intent routeIntent = new Intent(mContext,RouteService.class);
         boolean success = mContext.bindService(routeIntent, mConnection, Context.BIND_AUTO_CREATE);
         if (!success) {
             ELogger.d("bind route service failed");
@@ -74,7 +70,8 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
     }
 
     @Override
-    public ArrayList<String> getAvailableAddress(String where) {
+    public ArrayList<String> getAvailableAddress() {
+        String where = Address.createOwnAddress().toString();
         if (mRoute != null) {
             try {
                 return new ArrayList<>(mRoute.getConnectedClient(where));
@@ -110,6 +107,7 @@ public class MockPhysicalLayer implements IMockPhysicalLayer {
             if (TextUtils.isEmpty(where) || message == null) {
                 return;
             }
+
             message.setClassLoader(getClass().getClassLoader());
             String ownAddress = Address.createOwnAddress().toString();
             if (ownAddress.equals(where)) {

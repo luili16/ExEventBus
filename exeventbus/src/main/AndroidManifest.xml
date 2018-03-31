@@ -9,9 +9,6 @@
         android:supportsRtl="true">
         <service android:name="com.llx278.exeventbus.remote.RouteService"
             android:process=":exeventbus_bd">
-            <intent-filter>
-                <action android:name="com.llx278.exeventbus.sync"/>
-            </intent-filter>
         </service>
     </application>
 
