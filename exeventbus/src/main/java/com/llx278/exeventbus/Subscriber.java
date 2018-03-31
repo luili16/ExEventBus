@@ -2,6 +2,9 @@ package com.llx278.exeventbus;
 
 
 
+import com.llx278.exeventbus.execute.ThreadModel;
+import com.llx278.exeventbus.execute.Type;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,7 +24,8 @@ public @interface Subscriber {
     Type type() default Type.DEFAULT;
 
     /**
-     * 订阅事件的tag，同订阅的参数一起标识一个订阅事件
+     * 订阅事件的tag，同订阅事件所执行的方法的参数与返回值一起标识一个订阅事件
+     * 执行方法的参数和返回值可以是void
      */
     String tag();
 

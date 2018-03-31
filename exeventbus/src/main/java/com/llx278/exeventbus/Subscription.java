@@ -2,6 +2,9 @@ package com.llx278.exeventbus;
 
 import android.support.annotation.NonNull;
 
+import com.llx278.exeventbus.execute.ThreadModel;
+import com.llx278.exeventbus.execute.Type;
+
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 

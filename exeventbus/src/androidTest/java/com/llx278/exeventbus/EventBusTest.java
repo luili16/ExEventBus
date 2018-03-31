@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+import com.llx278.exeventbus.entry.SubscribeEntry0;
 import com.llx278.exeventbus.entry.SubscribeEntry1;
 import com.llx278.exeventbus.entry.SubscribeEntry2;
 import com.llx278.exeventbus.entry.SubscribeEntry3;
@@ -57,8 +58,8 @@ public class EventBusTest {
 
     @Test
     public void emptyParam() throws Exception {
-        SubscribeEntry1 subscribeEntry1 = new SubscribeEntry1();
-        mEventBus.register(subscribeEntry1);
+        SubscribeEntry0 subscribeEntry0 = new SubscribeEntry0();
+        mEventBus.register(subscribeEntry0);
 
         String tag = "event_void";
         mEventBus.publish(null,tag);

@@ -5,14 +5,12 @@ import android.text.TextUtils;
 
 import com.llx278.exeventbus.exception.IllegalRemoteArgumentException;
 import com.llx278.exeventbus.execute.Executor;
-import com.llx278.exeventbus.execute.ExecutorFactory;
+import com.llx278.exeventbus.execute.Type;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -220,21 +218,17 @@ class EventBus {
 
     private Object publish(Event event, Object eventObj) {
         CopyOnWriteArrayList<Subscription> subscriptionList = mSubscribedMap.get(event);
+        Object result = null;
         if (subscriptionList != null) {
             for (Subscription subs : subscriptionList) {
-                Executor executor = ExecutorFactory.createExecutor(subs.mThreadModel);
                 Object subscribe = subs.mSubscribeRef.get();
                 if (subscribe != null) {
-                    if (subs.mType == Type.BLOCK_RETURN) {
-                        // 因为返回值只能有一个,所以默认只是第一个注册的有效
-                        return executor.submit(subs.mMethod, eventObj, subscribe);
-                    } else if (subs.mType == Type.DEFAULT) {
-                        executor.execute(subs.mMethod, eventObj, subscribe);
-                    }
+                    Executor executor = subs.mThreadModel.getExecutor();
+                    result = executor.submit(subs.mMethod, eventObj, subscribe,subs.mType);
                 }
             }
         }
-        return null;
+        return result;
     }
 
     /**

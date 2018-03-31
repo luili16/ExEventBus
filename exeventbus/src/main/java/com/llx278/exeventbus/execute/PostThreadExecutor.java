@@ -8,35 +8,38 @@ import java.lang.reflect.Method;
  * Created by llx on 2018/2/5.
  */
 
-public class PostThreadExecutor implements Executor {
+class PostThreadExecutor implements Executor {
 
     PostThreadExecutor() {
     }
 
     @Override
-    public void execute(Method method, Object paramObj, Object obj) {
-        try {
-            method.invoke(obj,paramObj);
-        } catch (IllegalAccessException ignore) {
-            // never happen
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public Object submit(Method method, Object paramObj, Object obj, Type type) {
 
-    @Override
-    public Object submit(Method method, Object paramObj, Object obj) {
-        try {
-            if (paramObj == null) {
-                return method.invoke(obj);
-            } else {
-                return method.invoke(obj,paramObj);
-            }
-        } catch (IllegalAccessException ignore) {
-            // never happen
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+        switch (type) {
+            case DEFAULT:
+                try {
+                    method.invoke(obj, paramObj);
+                } catch (IllegalAccessException ignore) {
+                    // never happen
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            case BLOCK_RETURN:
+                try {
+                    if (paramObj == null) {
+                        return method.invoke(obj);
+                    } else {
+                        return method.invoke(obj, paramObj);
+                    }
+                } catch (IllegalAccessException ignore) {
+                    // never happen
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+            default:
+                return null;
         }
-        return null;
     }
 }

@@ -2,8 +2,8 @@ package com.llx278.exeventbus.entry;
 
 
 import com.llx278.exeventbus.Subscriber;
-import com.llx278.exeventbus.ThreadModel;
-import com.llx278.exeventbus.Type;
+import com.llx278.exeventbus.execute.ThreadModel;
+import com.llx278.exeventbus.execute.Type;
 import com.llx278.exeventbus.event.Event4;
 import com.llx278.exeventbus.event.Event5;
 import com.llx278.exeventbus.event.Event6;

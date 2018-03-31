@@ -45,6 +45,7 @@ public class ExEventBus {
     private Router mRouter;
 
     private ExEventBus(Context context) {
+
         mEventBus = new EventBus();
         mRouter = new Router(context,mEventBus);
     }
@@ -96,6 +97,10 @@ public class ExEventBus {
      */
     public Object publish(Object eventObj, String tag, String returnClassName){
         return mEventBus.publish(eventObj,tag,returnClassName);
+    }
+
+    public void remotePublish(Object eventObj, String tag,long timeout) throws TimeoutException {
+        remotePublish(eventObj,tag,void.class.getName(),timeout);
     }
 
     /**

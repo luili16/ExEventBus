@@ -10,7 +10,7 @@ import android.support.annotation.NonNull;
  * Created by llx on 2018/2/4.
  */
 
-public final class Event implements Parcelable {
+final class Event implements Parcelable {
 
     /**
      * 事件对象的参数类型

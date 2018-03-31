@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 
 /**
+ * 执行阻塞线程
  * Created by llx on 2018/2/26.
  */
 class MyRunnable implements Runnable {

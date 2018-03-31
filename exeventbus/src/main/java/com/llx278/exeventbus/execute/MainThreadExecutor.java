@@ -12,7 +12,7 @@ import java.util.concurrent.CountDownLatch;
  * Created by llx on 2018/2/5.
  */
 
-public class MainThreadExecutor implements Executor {
+class MainThreadExecutor implements Executor {
 
     private final Handler mHandler;
 
@@ -21,35 +21,41 @@ public class MainThreadExecutor implements Executor {
     }
 
     @Override
-    public void execute(final Method method, final Object paramObj, final Object obj) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (paramObj == null) {
-                        method.invoke(obj);
-                    } else {
-                        method.invoke(obj,paramObj);
+    public Object submit(final Method method, final Object paramObj, final Object object,Type type) {
+
+        switch (type) {
+            case DEFAULT:
+
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (paramObj == null) {
+                                method.invoke(object);
+                            } else {
+                                method.invoke(object,paramObj);
+                            }
+
+                        } catch (IllegalAccessException ignore) {
+                            // never happen
+                        } catch (InvocationTargetException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
+                });
+                return null;
+            case BLOCK_RETURN:
 
-                } catch (IllegalAccessException ignore) {
-                    // never happen
-                } catch (InvocationTargetException e) {
-                    throw new RuntimeException(e);
+                CountDownLatch doneSignal = new CountDownLatch(1);
+                MyRunnable myRunnable = new MyRunnable(doneSignal,method,paramObj,object);
+                mHandler.post(myRunnable);
+                try {
+                    doneSignal.await();
+                } catch (InterruptedException ignore) {
                 }
-            }
-        });
-    }
-
-    @Override
-    public Object submit(Method method, Object paramObj, Object obj) {
-        CountDownLatch doneSignal = new CountDownLatch(1);
-        MyRunnable myRunnable = new MyRunnable(doneSignal,method,paramObj,obj);
-        mHandler.post(myRunnable);
-        try {
-            doneSignal.await();
-        } catch (InterruptedException ignore) {
+                return myRunnable.getReturnValue();
+            default:
+                return null;
         }
-        return myRunnable.getReturnValue();
     }
 }

@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -14,13 +13,14 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.llx278.exeventbus.entry.SubscribeEntry11;
-import com.llx278.exeventbus.entry.SubscribeEntry7;
 import com.llx278.exeventbus.event.BaseEvent;
 import com.llx278.exeventbus.event.Event10;
 import com.llx278.exeventbus.event.Event11;
 import com.llx278.exeventbus.event.Event8;
 import com.llx278.exeventbus.event.Event9;
 import com.llx278.exeventbus.exception.TimeoutException;
+import com.llx278.exeventbus.execute.ThreadModel;
+import com.llx278.exeventbus.execute.Type;
 import com.llx278.exeventbus.remote.Address;
 
 import junit.framework.Assert;

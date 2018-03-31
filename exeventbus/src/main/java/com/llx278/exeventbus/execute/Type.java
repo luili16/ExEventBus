@@ -1,4 +1,4 @@
-package com.llx278.exeventbus;
+package com.llx278.exeventbus.execute;
 
 /**
  * Created by llx on 2018/2/26.
