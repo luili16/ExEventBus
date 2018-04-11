@@ -5,7 +5,7 @@ ExEventBus实现了进程间内与进程间发布订阅的功能
 
 ExEventBus可以与xposed结合起来使用，帮助调试一个被xposed注入的应用
 
-##使用方法
+## 使用方法
 
 初始化ExeventBus
 
