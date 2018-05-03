@@ -14,6 +14,7 @@ import com.llx278.exeventbus.ExEventBus;
 import com.llx278.exeventbus.Subscriber;
 import com.llx278.exeventbus.exception.TimeoutException;
 import com.llx278.exeventbus.execute.ThreadModel;
+import com.llx278.exeventbus.execute.Type;
 
 /**
  *
@@ -100,7 +101,7 @@ public class Fragment1 extends Fragment {
      * 此订阅事件可以由其他进程发布
      * @param event
      */
-    @Subscriber(tag = "remoteReceiveMethod",remote = true,model = ThreadModel.MAIN)
+    @Subscriber(tag = "remoteReceiveMethod",remote = true,model = ThreadModel.MAIN,type = Type.DEFAULT)
     public void remoteReceiveMethod(Event event) {
         String msg = event.getMsg();
         int pid = event.getPid();
